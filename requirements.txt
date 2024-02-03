@@ -1,0 +1,6 @@
+aiohttp
+discord
+discord.py
+python-dotenv
+requests
+py_spoo_url
