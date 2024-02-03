@@ -9,10 +9,12 @@ from discord.ext import commands
 from discord import app_commands, ui
 import discord
 from utils import *
+from api import *
 
 start_time = None
 latencies = []
 
+# command to show the code to use the api based on the user selected language
 
 class spooBot(commands.Bot):
     def __init__(self):
@@ -55,6 +57,15 @@ async def load():
 async def on_message(message):
     if message.author == bot.user:
         return
+
+    if bot.user in message.mentions:
+        if message.type is not discord.MessageType.reply:
+            embed = discord.Embed(
+                description="Hello, I am the SpooBot. I am a URL shortener bot that makes your URLs spoo-tacular! 😎\nType </help:1202746904203759646> to see the list of commands I can do for you!",
+                color=discord.Color.og_blurple(),
+            )
+
+            await message.reply(embed=embed)
 
     await bot.process_commands(message)
 
@@ -210,6 +221,7 @@ async def invite(ctx):
 
     await ctx.send(embed=embed)
 
+
 @bot.hybrid_command(
     name="bot-stats",
     description="View the stats of the bot",
@@ -250,7 +262,9 @@ async def support(ctx):
         color=discord.Color.gold(),
     )
 
-    embed.set_thumbnail(url="https://cdn.discordapp.com/icons/1192388005206433892/461edd6dd7b92f24a94505fe3a660f91.webp?size=1024&format=webp&width=0&height=320")
+    embed.set_thumbnail(
+        url="https://cdn.discordapp.com/icons/1192388005206433892/461edd6dd7b92f24a94505fe3a660f91.webp?size=1024&format=webp&width=0&height=320"
+    )
 
     try:
         embed.set_footer(
@@ -278,9 +292,21 @@ async def about(ctx):
         url="https://spoo.me",
     )
 
-    embed.add_field(name="What service does SpooBot use? 🌐", value="```SpooBot uses the spoo.me URL shortening service to shorten URLs. spoo.me is a fast, reliable, and secure URL shortening service that allows you to shorten URLs with ease. 🚀```", inline=False)
-    embed.add_field(name="Where can I find the source code? 💻", value="```You can find the source code for SpooBot on GitHub. 🌟```", inline=False)
-    embed.add_field(name="Who made SpooBot? 👥", value="```SpooBot was made by the devs of spoo.me. 🙏```", inline=False)
+    embed.add_field(
+        name="What service does SpooBot use? 🌐",
+        value="```SpooBot uses the spoo.me URL shortening service to shorten URLs. spoo.me is a fast, reliable, and secure URL shortening service that allows you to shorten URLs with ease. 🚀```",
+        inline=False,
+    )
+    embed.add_field(
+        name="Where can I find the source code? 💻",
+        value="```You can find the source code for SpooBot on GitHub. 🌟```",
+        inline=False,
+    )
+    embed.add_field(
+        name="Who made SpooBot? 👥",
+        value="```SpooBot was made by the devs of spoo.me. 🙏```",
+        inline=False,
+    )
 
     user = bot.get_user(1202738385194717205)
     embed.set_thumbnail(url=user.avatar.url)
@@ -297,11 +323,26 @@ async def about(ctx):
         )
 
     view = discord.ui.View()
-    view.add_item(discord.ui.Button(label="View Source Code", url="https://github.com/spoo-me/spoo-bot", style=discord.ButtonStyle.link, emoji="<:git:1203429172903542835>"))
-    view.add_item(discord.ui.Button(label="View Website", url="https://spoo.me", style=discord.ButtonStyle.link, emoji="<:spoo:1203429402071797760>"))
+    view.add_item(
+        discord.ui.Button(
+            label="View Source Code",
+            url="https://github.com/spoo-me/spoo-bot",
+            style=discord.ButtonStyle.link,
+            emoji="<:git:1203429172903542835>",
+        )
+    )
+    view.add_item(
+        discord.ui.Button(
+            label="View Website",
+            url="https://spoo.me",
+            style=discord.ButtonStyle.link,
+            emoji="<:spoo:1203429402071797760>",
+        )
+    )
 
     await ctx.send(embed=embed, view=view)
 
 
 if __name__ == "__main__":
+    keep_alive()
     bot.run(token=TOKEN)

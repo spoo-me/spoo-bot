@@ -9,17 +9,23 @@ waiting_gifs = [
     "https://media2.giphy.com/media/ZgqJGwh2tLj5C/giphy.gif?cid=ecf05e47gflyso481izbdcrw7y8okfkgdxgc7zoh34q9rxim&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://media0.giphy.com/media/EWhLjxjiqdZjW/giphy.gif?cid=ecf05e473fifxe2bg4act0zq73nkyjw0h69fxi52t8jt37lf&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://media2.giphy.com/media/26BRuo6sLetdllPAQ/200w.webp",
-    "https://media4.giphy.com/media/tXL4FHPSnVJ0A/200w.webp"
+    "https://media4.giphy.com/media/tXL4FHPSnVJ0A/200w.webp",
 ]
 
 welcome_gifs = [
-    "https://i.spoo.me/228698",
-    "https://i.spoo.me/314292",
-    "https://i.spoo.me/859502",
-    "https://i.spoo.me/772633",
-    "https://i.spoo.me/811814",
-    "https://i.spoo.me/827678",
-    "https://i.spoo.me/270692",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-0j.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-3k.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-6u.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-8W.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-DC.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-Gv.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-J2.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-ZY.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-f5.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-hy.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-kU.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-nh.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-xO.gif?raw=true",
 ]
 
 commands_ = {
@@ -42,6 +48,7 @@ commands_ = {
     "</invite:1203421046850584706> 💌": "With this command you can get the bot’s invite link to add it to your own server",
     "</help:1202746904203759646> ❔": "👀 See this message again",
 }
+
 
 def get_server_name_and_icon(server_id):
     response = requests.get(
@@ -254,7 +261,9 @@ async def generate_error_message(interaction: discord.Interaction, error):
     return embed
 
 
-async def generate_command_error_embed(interaction: discord.Interaction, error, command_name):
+async def generate_command_error_embed(
+    interaction: discord.Interaction, error, command_name
+):
     embed = discord.Embed(
         title="An error occured",
         description=f"```{error}```",
