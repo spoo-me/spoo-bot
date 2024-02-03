@@ -16,6 +16,7 @@ latencies = []
 
 # command to show the code to use the api based on the user selected language
 
+
 class spooBot(commands.Bot):
     def __init__(self):
         super().__init__(
