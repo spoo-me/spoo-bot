@@ -8,8 +8,8 @@ waiting_gifs = [
     "https://media2.giphy.com/media/QBd2kLB5qDmysEXre9/giphy.gif?cid=ecf05e47ha6xwa7rq38dcst49nefabwwrods631hvz67ptfg&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://media2.giphy.com/media/ZgqJGwh2tLj5C/giphy.gif?cid=ecf05e47gflyso481izbdcrw7y8okfkgdxgc7zoh34q9rxim&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://media0.giphy.com/media/EWhLjxjiqdZjW/giphy.gif?cid=ecf05e473fifxe2bg4act0zq73nkyjw0h69fxi52t8jt37lf&ep=v1_gifs_search&rid=giphy.gif&ct=g",
-    "https://media2.giphy.com/media/26BRuo6sLetdllPAQ/200w.webp",
-    "https://media4.giphy.com/media/tXL4FHPSnVJ0A/200w.webp",
+    "https://i.giphy.com/26BRuo6sLetdllPAQ.webp",
+    "https://i.giphy.com/tXL4FHPSnVJ0A.gif",
 ]
 
 welcome_gifs = [
@@ -31,18 +31,18 @@ welcome_gifs = [
 commands_ = {
     "</shorten:1202754338272051252> 🤏🏻 - With this command you can shorten your long urls.": """**Parameters:**
 - **url** - The url you want to shorten 🌐
-- **alias** - The custom alias you want to use for the url (optional) 🆔
-- **password** - The password you want to use for the url (optional) 🔑
-- **max_clicks** - The maximum number of clicks you want to allow for the url (optional) 🖱️""",
+- **alias** - The custom alias you want to use for the url  🆔
+- **password** - The password you want to use for the url  🔑
+- **max_clicks** - The maximum number of clicks you want to allow for the url 🖱️""",
     "</emojify:1202760315247403109> 😉 - With this command you can generate a short emoji link for your long boring urls.": """**Parameters:**
 - **url** - The url you want to shorten 🌐
-- **emojies** - The custom emojies you want to use for the url (optional) 😎
-- **password** - The password you want to use for the url (optional) 🔑
-- **max_clicks** - The maximum number of clicks you want to allow for the url (optional) 🖱️""",
+- **emojies** - The custom emojies you want to use for the url  😎
+- **password** - The password you want to use for the url  🔑
+- **max_clicks** - The maximum number of clicks you want to allow for the url 🖱️""",
     "</stats:1202895069628203048> 📊 - With this command you can generate detailed statistical insights and charts of your shortened urls": """**Parameters:**
 - **short_code** - The short code of the url you want to get the stats for 🔢
-- **password** - The password of the url, if the url was password-protected (optional) 🔑""",
-    "</get-code:1203726115835875348> 🧑🏻‍💻 - With this command you can get the code to use the spoo.me's official API in your own preferred language": """**Parameters:**
+- **password** - The password of the url, if the url was password-protected  🔑""",
+    "</get-code:1203775482903134219> 🧑🏻‍💻 - With this command you can get the code to use the spoo.me's official API in your own preferred language": """**Parameters:**
 - **language** - The language you want to get the code for. Available languages are:
 - All of the parameters as in the /shorten command""",
     "</bot-stats:1203422993275949056> 🤖": "With this command you can get detailed information about the bot and the developer",

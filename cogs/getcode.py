@@ -9,7 +9,7 @@ class genCode(commands.Cog):
 
     @app_commands.command(
         name="get-code",
-        description="Get the code to use the https://spoo.me API in your preferred language",
+        description="Get the code to use the https://spoo.me API in your preferred language to shorten a URL 🔗",
         )
     @app_commands.guild_only()
     @app_commands.choices(

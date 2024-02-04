@@ -169,7 +169,10 @@ async def ping(ctx):
         print(e, file=sys.stdout)
 
 
-@bot.hybrid_command(name="help", description="View the various commands of this bot")
+@bot.hybrid_command(
+    name="help",
+    description="View the various commands of this bot 📃"
+)
 async def help(ctx):
     user = bot.get_user(1202738385194717205)
     profilePicture = user.avatar.url
@@ -178,6 +181,7 @@ async def help(ctx):
         title="SpooBot Commands",
         description="Here is the list of the available commands:",
         color=discord.Color.blurple(),
+        timestamp=ctx.message.created_at,
     )
 
     embed.set_thumbnail(url=profilePicture)
@@ -200,13 +204,14 @@ async def help(ctx):
 
 @bot.hybrid_command(
     name="invite",
-    description="Get the invite link for the bot",
+    description="Get the invite link for the bot 💌",
 )
 async def invite(ctx):
     embed = discord.Embed(
         title="Invite SpooBot to your server!",
         description="Click [here](https://discord.com/api/oauth2/authorize?client_id=1202738385194717205&permissions=9242837113920&scope=bot) to invite SpooBot to your server!",
         color=discord.Color.orange(),
+        timestamp=ctx.message.created_at,
     )
 
     try:
@@ -225,18 +230,35 @@ async def invite(ctx):
 
 @bot.hybrid_command(
     name="bot-stats",
-    description="View the stats of the bot",
+    description="View the stats of the bot 👀",
 )
 async def stats(ctx):
+    global start_time
+
+    current_time = datetime.datetime.utcnow()
+    delta = current_time - start_time
+
+    hours, remainder = divmod(int(delta.total_seconds()), 3600)
+    minutes, seconds = divmod(remainder, 60)
+
     embed = discord.Embed(
         title="SpooBot Stats",
         description="Here are the stats of the bot:",
         color=discord.Color.og_blurple(),
+        timestamp=ctx.message.created_at,
     )
 
-    embed.add_field(name="Servers", value=f"```{len(bot.guilds)}```", inline=False)
-    embed.add_field(name="Users", value=f"```{len(bot.users)}```", inline=False)
-    embed.add_field(name="Commands", value=f"```{len(commands_)}```", inline=False)
+    embed.add_field(name="Servers", value=f"```{len(bot.guilds)}```", inline=True)
+    embed.add_field(name="Users", value=f"```{len(bot.users)}```", inline=True)
+
+    embed.add_field(
+        name="Uptime",
+        value=f"```{hours} hours {minutes} minutes {seconds} seconds```",
+        inline=False,
+    )
+
+    embed.add_field(name="Command Prefix", value=f"``` $ ```", inline=True)
+    embed.add_field(name="Total Commands", value=f"```{len(commands_)}```", inline=True)
 
     try:
         embed.set_footer(
@@ -254,13 +276,14 @@ async def stats(ctx):
 
 @bot.hybrid_command(
     name="support",
-    description="Join the support server for the bot",
+    description="Join the Support Server of the bot 🛠️",
 )
 async def support(ctx):
     embed = discord.Embed(
         title="Join the SpooBot Support Server!",
         description="Click https://spoo.me/discord to join the support server for SpooBot!",
         color=discord.Color.gold(),
+        timestamp=ctx.message.created_at,
     )
 
     embed.set_thumbnail(
@@ -291,6 +314,7 @@ async def about(ctx):
         description="```SpooBot is a URL shortener bot that makes your URLs spoo-tacular! 🎉 It is a bot that saves you time and hassle by shortening URLs for you, so you can focus on more important things! 😎\nBut wait, there's more! SpooBot also lets you view all your URL statistics from this bot, so you can track how many clicks, views, and visits your URLs get! 📈\nSpooBot is the ultimate URL shortener bot that you need in your life! 😍```",
         color=discord.Color.greyple(),
         url="https://spoo.me",
+        timestamp=ctx.message.created_at,
     )
 
     embed.add_field(

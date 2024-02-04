@@ -29,7 +29,7 @@ class shortenUrl(commands.Cog):
 
     @app_commands.command(
         name="shorten",
-        description="Shorten a Long URL ✂️",
+        description="Shorten a Long URL 🤏🏻",
     )
     @app_commands.describe(
             url="The URL to shorten",
