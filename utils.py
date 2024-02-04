@@ -42,6 +42,9 @@ commands_ = {
     "</stats:1202895069628203048> 📊 - With this command you can generate detailed statistical insights and charts of your shortened urls": """**Parameters:**
 - **short_code** - The short code of the url you want to get the stats for 🔢
 - **password** - The password of the url, if the url was password-protected (optional) 🔑""",
+    "</get-code:1203726115835875348> 🧑🏻‍💻 - With this command you can get the code to use the spoo.me's official API in your own preferred language": """**Parameters:**
+- **language** - The language you want to get the code for. Available languages are:
+- All of the parameters as in the /shorten command""",
     "</bot-stats:1203422993275949056> 🤖": "With this command you can get detailed information about the bot and the developer",
     "</about:1203426619721785384> ℹ️": "With this command you can get detailed information about the bot and the developer",
     "</support:1203424044418994268> 📞": "With this command you can get the support server invite link",

@@ -7,6 +7,8 @@ class StatsSelectView(discord.ui.View):
     def __init__(self, stats:Statistics):
         super().__init__(timeout=None)
         self.stats = stats
+        self.used_export_options = []
+        self.used_charts_options = []
 
     @discord.ui.select(
         placeholder="➕ Additional Statistics Chart",
@@ -22,6 +24,9 @@ class StatsSelectView(discord.ui.View):
         ]
     )
     async def analysis_chart_callback(self, interaction:discord.Interaction, select:discord.ui.Select):
+        if select.values[0] in self.used_charts_options:
+            await interaction.response.send_message(embed=discord.Embed(title="An Error Occured", description=f"```{select.values[0]} option has already been used before.```", color=discord.Color.red()), ephemeral=True)
+            return
 
         await interaction.response.defer()
 
@@ -37,6 +42,7 @@ class StatsSelectView(discord.ui.View):
             )
 
             embed.set_image(url=resp["url"])
+            embed.add_field(name="Short Code", value=f"```{self.stats.short_code}```", inline=False)
 
             platform_data = json.dumps(self.stats.platforms_analysis)
             unique_platform_data = json.dumps(self.stats.unique_platforms_analysis)
@@ -54,6 +60,7 @@ class StatsSelectView(discord.ui.View):
                 description="This chart shows the trend of browsers used to access the URL",
             )
             embed.set_image(url=resp["url"])
+            embed.add_field(name="Short Code", value=f"```{self.stats.short_code}```", inline=False)
 
             browser_data = json.dumps(self.stats.browsers_analysis)
             unique_browser_data = json.dumps(self.stats.unique_browsers_analysis)
@@ -71,6 +78,7 @@ class StatsSelectView(discord.ui.View):
                 description="This chart shows the trend of referrers used to access the URL",
             )
             embed.set_image(url=resp["url"])
+            embed.add_field(name="Short Code", value=f"```{self.stats.short_code}```", inline=False)
 
             refferer_data = json.dumps(self.stats.referrers_analysis)
             unique_refferer_data = json.dumps(self.stats.unique_referrers_analysis)
@@ -92,6 +100,7 @@ class StatsSelectView(discord.ui.View):
                 description="This chart shows the trend of clicks over the last 30 days",
             )
             embed.set_image(url=resp["url"])
+            embed.add_field(name="Short Code", value=f"```{self.stats.short_code}```", inline=False)
 
             click_data = json.dumps(click_data)
             unique_click_data = json.dumps(unique_click_data)
@@ -112,6 +121,7 @@ class StatsSelectView(discord.ui.View):
                 description="This heatmap shows the countries from where the URL was accessed",
             )
             embed.set_image(url="attachment://heatmap.png")
+            embed.add_field(name="Short Code", value=f"```{self.stats.short_code}```", inline=False)
 
             country_data = json.dumps(self.stats.country_analysis)
 
@@ -124,14 +134,11 @@ class StatsSelectView(discord.ui.View):
 
             await interaction.followup.send(embed=embed, file=discord.File("heatmap.png"))
 
-            if len(select.options) == 1:
+            self.used_charts_options.append(select.values[0])
+            if len(self.used_charts_options) == 6:
                 select.disabled = True
-            else:
-                for i in select.options:
-                    if i.value == select.values[0]:
-                        select.options.remove(i)
-
-            await interaction.message.edit(view=self)
+                await interaction.message.edit(view=self)
+                self.used_charts_options = []
             return
 
         elif select.values[0] == "Unique Countries Heatmap 🌍":
@@ -147,6 +154,7 @@ class StatsSelectView(discord.ui.View):
                 description="This heatmap shows the unique clicks countries where the URL was accessed",
             )
             embed.set_image(url="attachment://unique_heatmap.png")
+            embed.add_field(name="Short Code", value=f"```{self.stats.short_code}```", inline=False)
 
             country_data = json.dumps(self.stats.unique_country_analysis)
 
@@ -159,14 +167,11 @@ class StatsSelectView(discord.ui.View):
 
             await interaction.followup.send(embed=embed, file=discord.File("unique_heatmap.png"))
 
-            if len(select.options) == 1:
+            self.used_charts_options.append(select.values[0])
+            if len(self.used_charts_options) == 6:
                 select.disabled = True
-            else:
-                for i in select.options:
-                    if i.value == select.values[0]:
-                        select.options.remove(i)
-
-            await interaction.message.edit(view=self)
+                await interaction.message.edit(view=self)
+                self.used_charts_options = []
             return
 
         try:
@@ -176,14 +181,11 @@ class StatsSelectView(discord.ui.View):
 
         await interaction.followup.send(embed=embed)
 
-        if len(select.options) == 1:
-                select.disabled = True
-        else:
-            for i in select.options:
-                if i.value == select.values[0]:
-                    select.options.remove(i)
-
-        await interaction.message.edit(view=self)
+        self.used_charts_options.append(select.values[0])
+        if len(self.used_charts_options) == 6:
+            select.disabled = True
+            await interaction.message.edit(view=self)
+            self.used_charts_options = []
         return
 
     @discord.ui.select(
@@ -197,29 +199,31 @@ class StatsSelectView(discord.ui.View):
         ]
     )
     async def export_data_callback(self, interaction:discord.Interaction, select:discord.ui.Select):
+        if select.values[0] in self.used_export_options:
+            await interaction.response.send_message(embed=discord.Embed(title="An Error Occured", description=f"```{select.values[0]} option has already been used before.```", color=discord.Color.red()), ephemeral=True)
+            return
+
         await interaction.response.defer()
 
         try:
             if select.values[0] == "Export as JSON 🔑":
                 self.stats.export_data(filename=f"json_export.json", filetype="json")
-                await interaction.followup.send(file=discord.File(r"json_export.json", filename=f"{self.stats.short_code}_json_export.json"))
+                await interaction.followup.send(content=f"Short Code - `{self.stats.short_code}`", file=discord.File(r"json_export.json", filename=f"{self.stats.short_code}_json_export.json"))
 
             elif select.values[0] == "Export as CSV 📝":
                 self.stats.export_data(filename="csv_export", filetype="csv")
-                await interaction.followup.send(file=discord.File(r"csv_export.zip", filename=f"{self.stats.short_code}_csv_export.zip"))
+                await interaction.followup.send(content=f"Short Code - `{self.stats.short_code}`", file=discord.File(r"csv_export.zip", filename=f"{self.stats.short_code}_csv_export.zip"))
 
             elif select.values[0] == "Export as Excel 📊":
                 self.stats.export_data(filename="excel_export.xlsx", filetype="xlsx")
-                await interaction.followup.send(file=discord.File(r"excel_export.xlsx", filename=f"{self.stats.short_code}_excel_export.xlsx"))
+                await interaction.followup.send(content=f"Short Code - `{self.stats.short_code}`", file=discord.File(r"excel_export.xlsx", filename=f"{self.stats.short_code}_excel_export.xlsx"))
 
-            if len(select.options) == 1:
+            self.used_export_options.append(select.values[0])
+            if len(self.used_export_options) == 3:
                 select.disabled = True
-            else:
-                for i in select.options:
-                    if i.value == select.values[0]:
-                        select.options.remove(i)
+                await interaction.message.edit(view=self)
+                self.used_export_options = []
 
-            await interaction.message.edit(view=self)
             return
 
         except Exception as e:
