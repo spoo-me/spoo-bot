@@ -38,7 +38,9 @@ class shortenUrl(commands.Cog):
             password="The password for the URL",
     )
     @app_commands.guild_only()
-    @app_commands.checks.cooldown(1, 30.0)
+    @app_commands.checks.cooldown(1, 10.0)
+    @app_commands.checks.cooldown(5, 60.0)
+    @app_commands.checks.cooldown(200, 24*60*60.0)
     async def shorten(self, interaction: discord.Interaction, url: str, alias:str = None, max_clicks: int=None, password: str=None ):
 
         await interaction.response.defer()
@@ -84,7 +86,9 @@ class shortenUrl(commands.Cog):
         password="The password for the URL",
     )
     @app_commands.guild_only()
-    @app_commands.checks.cooldown(1, 30.0)
+    @app_commands.checks.cooldown(1, 10.0)
+    @app_commands.checks.cooldown(5, 60.0)
+    @app_commands.checks.cooldown(200, 24*60*60.0)
     async def emojify(self, interaction, url: str, emojies: str = None, max_clicks: int = None, password: str = None):
 
         await interaction.response.defer()

@@ -234,35 +234,36 @@ def make_countries_heatmap(
     return plt
 
 
-async def generate_error_message(interaction: discord.Interaction, error):
+async def generate_error_message(interaction: discord.Interaction, error, cooldown_configuration=["- ```1 time every 10 seconds```", "- ```5 times every 60 seconds```", "- ```200 times every 24 hours```"]):
     end_time = datetime.datetime.now() + datetime.timedelta(seconds=error.retry_after)
-    end_time_ts = f"<t:{int(end_time.timestamp())}>"
-
-    hours, remainder = divmod(error.retry_after, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    seconds = round(seconds)
-    time_left = f"{seconds} second{'s' if seconds != 1 else ''}"
+    end_time_ts = int(end_time.timestamp())
 
     embed = discord.Embed(
         title="⏳ Cooldown",
-        description=f"You have to wait until **{end_time_ts}** ({time_left}) to use this command again.",
+        description=f"### You can use this command again <t:{end_time_ts}:R>",
         color=discord.Color.red(),
+        timestamp=interaction.created_at,
     )
     embed.set_image(url=random.choice(waiting_gifs))
 
+    embed.add_field(
+        name = "How many times can I use this command?",
+        value = "\n".join(cooldown_configuration),
+        inline=False,
+    )
+
     try:
         embed.set_footer(
-            text=f"Requested by {interaction.user}",
+            text=f"{interaction.user} used /{interaction.command.name}",
             icon_url=interaction.user.avatar,
         )
     except:
         embed.set_footer(
-            text=f"Requested by {interaction.user}",
+            text=f"{interaction.user} used /{interaction.command.name}",
             icon_url=interaction.user.default_avatar,
         )
 
     return embed
-
 
 async def generate_command_error_embed(
     interaction: discord.Interaction, error, command_name

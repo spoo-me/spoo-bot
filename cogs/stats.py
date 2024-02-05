@@ -292,7 +292,7 @@ class urlStats(commands.Cog):
         self, interaction: discord.Interaction, error: app_commands.AppCommandError
     ):
         if isinstance(error, app_commands.CommandOnCooldown):
-            embed = await generate_error_message(interaction, error)
+            embed = await generate_error_message(interaction, error, cooldown_configuration = ["- ```1 time every 30 seconds```"])
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             embed = await generate_command_error_embed(interaction, error, "stats")
