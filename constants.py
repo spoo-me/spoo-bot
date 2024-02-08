@@ -13,6 +13,7 @@ import discord
 import random
 import datetime
 import random
+import validators
 
 load_dotenv()
 

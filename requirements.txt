@@ -5,3 +5,4 @@ python-dotenv
 requests
 py_spoo_url
 flask
+validators

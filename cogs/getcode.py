@@ -46,7 +46,7 @@ class genCode(commands.Cog):
 
         await interaction.response.defer()
 
-        code, lang = generate_code_snippet(language.value, url, alias, max_clicks, password)
+        code, lang = generate_code_snippet(language=language.value, long_url=url, alias=alias, max_clicks=max_clicks, password=password)
 
         soft_errors = []
 
