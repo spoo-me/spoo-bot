@@ -28,7 +28,7 @@ class spooBot(commands.Bot):
         await load()
 
         global start_time
-        start_time = datetime.datetime.utcnow()
+        start_time = datetime.datetime.now(datetime.UTC)
 
         await self.wait_until_ready()
         if not self.synced:
@@ -40,6 +40,15 @@ class spooBot(commands.Bot):
                 )
             )
             self.synced = True
+
+        try:
+            file = r"assets\\s.gif"
+            with open(file, "rb") as avatar:
+                await self.user.edit(avatar=avatar.read())
+                print("Applied Animated Avatar")
+        except Exception as e:
+            print(e, file=sys.stdout)
+            pass
 
         print(f"Logged in as {self.user.name} (ID: {self.user.id})")
         print(f"Connected to {len(self.guilds)} guilds")
@@ -144,7 +153,7 @@ async def ping(ctx):
 
         global start_time
 
-        current_time = datetime.datetime.utcnow()
+        current_time = datetime.datetime.now(datetime.UTC)
         delta = current_time - start_time
 
         hours, remainder = divmod(int(delta.total_seconds()), 3600)
@@ -235,7 +244,7 @@ async def invite(ctx):
 async def stats(ctx):
     global start_time
 
-    current_time = datetime.datetime.utcnow()
+    current_time = datetime.datetime.now(datetime.UTC)
     delta = current_time - start_time
 
     hours, remainder = divmod(int(delta.total_seconds()), 3600)
