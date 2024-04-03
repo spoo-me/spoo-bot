@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 from threading import Thread
+import subprocess
 
 app = Flask("")
 
@@ -15,7 +16,11 @@ def health():
 
 
 def run():
-    app.run(host="0.0.0.0", port=8080)
+    try:
+        server = subprocess.Popen(["gunicorn", "-w", "4", "api:app"])
+        return server
+    except:
+        app.run(host="0.0.0.0", port=8080)
 
 
 def keep_alive():
