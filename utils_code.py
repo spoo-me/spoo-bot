@@ -218,7 +218,7 @@ catch (HttpRequestException ex)
         )
 
     elif language == "Go":
-        form_params = f"url={long_url}"
+        form_params = ""
 
         if alias is not None:
             form_params += f"&alias={alias}"
@@ -236,6 +236,7 @@ import (
     "io"
     "net"
     "net/http"
+    "net/url"
     "strings"
     "time"
 )
@@ -249,10 +250,14 @@ func main() {{
         }},
     }}
 
-    url := "https://spoo.me/"
-    payload := strings.NewReader("{form_params}")
+    apiUrl := "https://spoo.me/"
 
-    req, err := http.NewRequest("POST", url, payload)
+    longUrl := "{long_url}"
+    encodedLongUrl := url.QueryEscape(longUrl)
+
+    payload := strings.NewReader("url="+encodedLongUrl{f'+"{form_params}"' if form_params!="" else ''})
+
+    req, err := http.NewRequest("POST", apiUrl, payload)
     if err != nil {{
         fmt.Println("Error creating request:", err)
         return
@@ -303,7 +308,7 @@ Content-Length: {len(form_params)}
         )
 
     elif language == "Java":
-        form_params = f"url={long_url}"
+        form_params = f""
 
         if alias is not None:
             form_params += f"&alias={alias}"
@@ -314,9 +319,11 @@ Content-Length: {len(form_params)}
 
         return (
             f"""import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 
 public class HttpRequestExample {{
 
@@ -324,8 +331,14 @@ public class HttpRequestExample {{
         // Define the URL
         String url = "https://spoo.me/";
 
+        // Define the Long URL
+        String longUrl = "https://example.com";
+
+        // Encode the Long URL
+        String encodedLongUrl = URLEncoder.encode(longUrl, StandardCharsets.UTF_8);
+
         // Build the request body
-        String requestBody = "{form_params}";
+        String requestBody = "url="+encodedLongUrl{f'+"{form_params}"' if form_params!="" else ''};
 
         // Create and configure the HttpClient
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -430,7 +443,7 @@ xhr.send(data);""",
         )
 
     elif language == "Kotlin":
-        form_params = f"url={long_url}"
+        form_params = f""
 
         if alias is not None:
             form_params += f"&alias={alias}"
@@ -440,16 +453,21 @@ xhr.send(data);""",
             form_params += f"&max-clicks={max_clicks}"
 
         return (
-            f"""import okhttp3.MediaType
+            f"""import okhttp3.HttpUrl
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 fun main() {{
     val client = OkHttpClient()
 
-    val mediaType = MediaType.parse("application/x-www-form-urlencoded")
-    val body = RequestBody.create(mediaType, "{form_params}")
+    val mediaType = "application/x-www-form-urlencoded".toMediaType()
+    val longURl = "{long_url}"
+
+    val encodedUrl = HttpUrl.parse(originalUrl)?.encodedPath
+
+    val body = "url=$encodedUrl{form_params if form_params!="" else ""}".toRequestBody(mediaType)
 
     val request = Request.Builder()
         .url("https://spoo.me/")
@@ -572,19 +590,25 @@ req.headers({{
         )
 
     elif language == "PHP":
-        form_params = f"url={long_url}"
+        form_params = f"'url' => '{long_url}'"
 
         if alias is not None:
-            form_params += f"&alias={alias}"
+            form_params += f", 'alias' => '{alias}'"
         if password is not None:
-            form_params += f"&password={password}"
+            form_params += f", 'password' => '{password}'"
         if max_clicks is not None:
-            form_params += f"&max-clicks={max_clicks}"
+            form_params += f", 'max-clicks' => '{max_clicks}'"
 
         return (
             f"""<?php
 
 $curl = curl_init();
+
+$params = [
+    {form_params}
+];
+
+$encodedParams = http_build_query($params);
 
 curl_setopt_array($curl, [
     CURLOPT_URL => "https://spoo.me",
@@ -594,7 +618,7 @@ curl_setopt_array($curl, [
     CURLOPT_TIMEOUT => 30,
     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
     CURLOPT_CUSTOMREQUEST => "POST",
-    CURLOPT_POSTFIELDS => "{form_params}",
+    CURLOPT_POSTFIELDS => $encodedParams,
     CURLOPT_HTTPHEADER => [
         "Accept: application/json",
         "content-type: application/x-www-form-urlencoded"
@@ -615,7 +639,7 @@ if ($err) {{
         )
 
     elif language == "R":
-        form_params = f"url={long_url}"
+        form_params = f""
 
         if alias is not None:
             form_params += f"&alias={alias}"
@@ -629,7 +653,13 @@ if ($err) {{
 
 url <- "https://spoo.me"
 
-payload <- "{form_params}"
+# long url
+long_url <- "{long_url}"
+
+# encode the long url
+encoded_long_url <- URLencode(long_url)
+
+payload <- paste("url=", encoded_long_url{f', "{form_params}"' if form_params!="" else ''}, sep="")
 
 encode <- "form"
 
@@ -648,7 +678,7 @@ tryCatch({{
         )
 
     elif language == "Ruby":
-        form_params = f"url={long_url}"
+        form_params = f""
 
         if alias is not None:
             form_params += f"&alias={alias}"
@@ -666,10 +696,13 @@ url = URI("https://spoo.me")
 http = Net::HTTP.new(url.host, url.port)
 http.use_ssl = true
 
+longUrl = "{long_url}"
+encodedLongUrl = URI.encode_www_form_component(longUrl)
+
 request = Net::HTTP::Post.new(url)
 request["content-type"] = 'application/x-www-form-urlencoded'
 request["Accept"] = 'application/json'
-request.body = "{form_params}"
+request.body = "url=#{'{encodedLongUrl}'}{form_params}"
 
 response = http.request(request)
 puts response.read_body""",
@@ -677,7 +710,7 @@ puts response.read_body""",
         )
 
     elif language == "Shell":
-        form_params = f"url={long_url}"
+        form_params = f""
 
         if alias is not None:
             form_params += f"&alias={alias}"
@@ -687,7 +720,10 @@ puts response.read_body""",
             form_params += f"&max-clicks={max_clicks}"
 
         return (
-            f"""curl -X POST "https://spoo.me/" -H "Accept: application/json" -d "{form_params}" """,
+            f"""curl -X POST "https://spoo.me/" \\
+-H "Accept: application/json" \\
+-H "Content-Type: application/x-www-form-urlencoded" \\
+-d "url=$(echo -n '{long_url}' | jq -sRr @uri){form_params}" """,
             "shell",
         )
 
@@ -755,19 +791,6 @@ def validate_password(password):
 
     return True
 
-
-# def validate_url(url):
-#     pattern = re.compile(
-#         r"^(https?:\/\/)?(www\.)?[a-zA-Z0-9]+([\-\.]{1}[a-zA-Z0-9]+)*\.[a-zA-Z]{2,6}(\:[0-9]{1,5})?(\/.*)?$"
-#     )
-
-#     if "spoo.me" in url:
-#         return False
-
-#     if re.fullmatch(pattern, url):
-#         return True
-#     else:
-#         return False
 
 def validate_url(url):
     return validators.url(url, skip_ipv4_addr=True, skip_ipv6_addr=True) and not "spoo.me" in url
