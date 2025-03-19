@@ -6,7 +6,6 @@ import sys
 import time
 from constants import TOKEN
 from discord.ext import commands
-from discord import app_commands, ui
 import discord
 from utils import *
 from api import *
@@ -36,13 +35,13 @@ class spooBot(commands.Bot):
             await bot.change_presence(
                 activity=discord.CustomActivity(
                     name="Custom Status",
-                    state=f"Shorten your URLs, not your possibilities.",
+                    state="Shorten your URLs, not your possibilities.",
                 )
             )
             self.synced = True
 
         try:
-            file = r"assets\\s.gif"
+            file = r"assets\\pfp-animated.gif"
             with open(file, "rb") as avatar:
                 await self.user.edit(avatar=avatar.read())
                 print("Applied Animated Avatar")
@@ -95,7 +94,7 @@ async def on_member_join(member):
 
     try:
         embed.set_thumbnail(url=member.avatar.url)
-    except:
+    except Exception:
         embed.set_thumbnail(url=member.default_avatar.url)
 
     await channel.send(embed=embed)
@@ -178,10 +177,7 @@ async def ping(ctx):
         print(e, file=sys.stdout)
 
 
-@bot.hybrid_command(
-    name="help",
-    description="View the various commands of this bot 📃"
-)
+@bot.hybrid_command(name="help", description="View the various commands of this bot 📃")
 async def help(ctx):
     user = bot.get_user(1202738385194717205)
     profilePicture = user.avatar.url
@@ -202,7 +198,7 @@ async def help(ctx):
             text="Information requested by: {}".format(ctx.author.name),
             icon_url=ctx.author.avatar.url,
         )
-    except:
+    except Exception:
         embed.set_footer(
             text="Information requested by: {}".format(ctx.author.name),
             icon_url=ctx.author.default_avatar.url,
@@ -266,7 +262,7 @@ async def stats(ctx):
         inline=False,
     )
 
-    embed.add_field(name="Command Prefix", value=f"``` $ ```", inline=True)
+    embed.add_field(name="Command Prefix", value="``` $ ```", inline=True)
     embed.add_field(name="Total Commands", value=f"```{len(commands_)}```", inline=True)
 
     try:

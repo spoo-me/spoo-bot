@@ -13,19 +13,19 @@ waiting_gifs = [
 ]
 
 welcome_gifs = [
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-0j.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-3k.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-6u.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-8W.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-DC.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-Gv.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-J2.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-ZY.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-f5.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-hy.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-kU.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-nh.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-xO.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-0j.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-3k.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-6u.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-8W.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-DC.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-Gv.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-J2.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-ZY.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-f5.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-hy.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-kU.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-nh.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-xO.gif?raw=true",
 ]
 
 commands_ = {
@@ -84,7 +84,6 @@ def generate_chart(
     type: str,
     fill: bool = True,
 ):
-
     data_dict = {
         "type": type,
         "data": {
@@ -156,7 +155,7 @@ def generate_chart(
         )
 
     resp = requests.post(
-        f"https://quickchart.io/chart/create",
+        "https://quickchart.io/chart/create",
         json={"chart": data_dict, "v": 4, "backgroundColor": "rgb(32, 34, 37)"},
     )
 
@@ -171,7 +170,6 @@ def make_countries_heatmap(
     alpha: float = 1,
     title: str = "Countries Heatmap",
 ):
-
     matplotlib.rcParams["font.size"] = 18
     matplotlib.rcParams["axes.labelcolor"] = "White"
 
@@ -234,7 +232,15 @@ def make_countries_heatmap(
     return plt
 
 
-async def generate_error_message(interaction: discord.Interaction, error, cooldown_configuration=["- ```1 time every 10 seconds```", "- ```5 times every 60 seconds```", "- ```200 times every 24 hours```"]):
+async def generate_error_message(
+    interaction: discord.Interaction,
+    error,
+    cooldown_configuration=[
+        "- ```1 time every 10 seconds```",
+        "- ```5 times every 60 seconds```",
+        "- ```200 times every 24 hours```",
+    ],
+):
     end_time = datetime.datetime.now() + datetime.timedelta(seconds=error.retry_after)
     end_time_ts = int(end_time.timestamp())
 
@@ -247,8 +253,8 @@ async def generate_error_message(interaction: discord.Interaction, error, cooldo
     embed.set_image(url=random.choice(waiting_gifs))
 
     embed.add_field(
-        name = "How many times can I use this command?",
-        value = "\n".join(cooldown_configuration),
+        name="How many times can I use this command?",
+        value="\n".join(cooldown_configuration),
         inline=False,
     )
 
@@ -264,6 +270,7 @@ async def generate_error_message(interaction: discord.Interaction, error, cooldo
         )
 
     return embed
+
 
 async def generate_command_error_embed(
     interaction: discord.Interaction, error, command_name
