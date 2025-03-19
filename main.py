@@ -4,7 +4,8 @@ import random
 import statistics
 import sys
 import time
-from discord.ext import commands
+import aiohttp
+from discord.ext import commands, tasks
 import discord
 from constants import TOKEN
 from api import keep_alive
@@ -20,6 +21,8 @@ class spooBot(commands.Bot):
             command_prefix="$", intents=discord.Intents.all(), help_command=None
         )
         self.synced = False
+        self.stats_channel_1 = None  # Will store channel object for total clicks
+        self.stats_channel_2 = None  # Will store channel object for total shortlinks
 
     async def on_ready(self):
         await load()
@@ -38,6 +41,9 @@ class spooBot(commands.Bot):
             )
             self.synced = True
 
+            # Start the stats update task
+            self.update_stats.start()
+
         try:
             file = r"assets\\pfp-animated.gif"
             with open(file, "rb") as avatar:
@@ -49,6 +55,44 @@ class spooBot(commands.Bot):
 
         print(f"Logged in as {self.user.name} (ID: {self.user.id})")
         print(f"Connected to {len(self.guilds)} guilds")
+
+    async def fetch_spoo_stats(self):
+        """Fetch statistics from spoo.me API"""
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://spoo.me/metric") as response:
+                    if response.status == 200:
+                        return await response.json()
+        except Exception as e:
+            print(f"Error fetching stats: {e}", file=sys.stdout)
+        return None
+
+    @tasks.loop(minutes=10)
+    async def update_stats(self):
+        """Update channel names with current statistics"""
+        if not (self.stats_channel_1 and self.stats_channel_2):
+            guild = self.get_guild(1192388005206433892)  # Parent server ID
+            if guild:
+                # Get the channels for displaying stats
+                self.stats_channel_1 = guild.get_channel(
+                    1351907108190162944
+                )  # Total clicks channel
+                self.stats_channel_2 = guild.get_channel(
+                    1351907592380612608
+                )  # Total shortlinks channel
+
+        if self.stats_channel_1 and self.stats_channel_2:
+            stats = await self.fetch_spoo_stats()
+            if stats:
+                try:
+                    await self.stats_channel_1.edit(
+                        name=f"📈︱Clicks— {stats['total-clicks']}"
+                    )
+                    await self.stats_channel_2.edit(
+                        name=f"🔗︱Links— {stats['total-shortlinks']}"
+                    )
+                except Exception as e:
+                    print(f"Error updating channel names: {e}", file=sys.stdout)
 
 
 bot = spooBot()
