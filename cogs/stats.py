@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import json
+import os
 from py_spoo_url import Statistics
 from utils import (
     generate_chart,
@@ -14,7 +15,7 @@ from utils import (
 class StatsSelectView(discord.ui.View):
     def __init__(self, stats: Statistics):
         super().__init__(timeout=None)
-        self.stats = stats
+        self.stats: Statistics = stats
         self.used_export_options = []
         self.used_charts_options = []
 
@@ -409,35 +410,98 @@ class StatsSelectView(discord.ui.View):
         await interaction.response.defer()
 
         try:
+            embed = discord.Embed(
+                title="Data Export 📥",
+                description=f"Statistics export for `https://spoo.me/{self.stats.short_code}`",
+                color=discord.Color.green(),
+                timestamp=interaction.created_at,
+                url=f"https://spoo.me/stats/{self.stats.short_code}",
+            )
+
             if select.values[0] == "Export as JSON 🔑":
+                # Export the file
                 self.stats.export_data(filename="json_export.json", filetype="json")
-                await interaction.followup.send(
-                    content=f"Short Code - `{self.stats.short_code}`",
-                    file=discord.File(
-                        r"json_export.json",
-                        filename=f"{self.stats.short_code}_json_export.json",
-                    ),
+
+                # Get file size
+                file_size = round(
+                    os.path.getsize("json_export.json") / 1024, 2
+                )  # Convert to KB
+
+                # Add file information
+                embed.add_field(
+                    name="File Information",
+                    value=f"```Size: {file_size} KB\nType: JSON```",
+                    inline=False,
+                )
+
+                # Create Discord file object
+                file = discord.File(
+                    "json_export.json",
+                    filename=f"{self.stats.short_code}_json_export.json",
                 )
 
             elif select.values[0] == "Export as CSV 📝":
                 self.stats.export_data(filename="csv_export", filetype="csv")
-                await interaction.followup.send(
-                    content=f"Short Code - `{self.stats.short_code}`",
-                    file=discord.File(
-                        r"csv_export.zip",
-                        filename=f"{self.stats.short_code}_csv_export.zip",
-                    ),
+
+                # Get file size - CSV exports are zipped
+                file_size = round(
+                    os.path.getsize("csv_export.zip") / 1024, 2
+                )  # Convert to KB
+
+                # Add file information
+                embed.add_field(
+                    name="File Information",
+                    value=f"```Size: {file_size} KB\nType: CSV```",
+                    inline=False,
+                )
+
+                # Create Discord file object
+                file = discord.File(
+                    "csv_export.zip", filename=f"{self.stats.short_code}_csv_export.zip"
                 )
 
             elif select.values[0] == "Export as Excel 📊":
                 self.stats.export_data(filename="excel_export.xlsx", filetype="xlsx")
-                await interaction.followup.send(
-                    content=f"Short Code - `{self.stats.short_code}`",
-                    file=discord.File(
-                        r"excel_export.xlsx",
-                        filename=f"{self.stats.short_code}_excel_export.xlsx",
-                    ),
+
+                # Get file size
+                file_size = round(
+                    os.path.getsize("excel_export.xlsx") / 1024, 2
+                )  # Convert to KB
+
+                # Add file information
+                embed.add_field(
+                    name="File Information",
+                    value=f"```Size: {file_size} KB\nType: Excel```",
+                    inline=False,
                 )
+
+                # Create Discord file object
+                file = discord.File(
+                    "excel_export.xlsx",
+                    filename=f"{self.stats.short_code}_excel_export.xlsx",
+                )
+
+            try:
+                embed.set_footer(
+                    text=f"Requested by {interaction.user.name}",
+                    icon_url=interaction.user.avatar,
+                )
+            except Exception:
+                embed.set_footer(
+                    text=f"Requested by {interaction.user.name}",
+                    icon_url=interaction.user.default_avatar,
+                )
+
+            # Send the file
+            await interaction.followup.send(embed=embed, file=file)
+
+            # Cleanup the exported file
+            if select.values[0] == "Export as JSON 🔑":
+                os.remove("json_export.json")
+            elif select.values[0] == "Export as CSV 📝":
+                os.remove("csv_export.zip")
+            elif select.values[0] == "Export as Excel 📊":
+                os.remove("excel_export.xlsx")
 
             self.used_export_options.append(select.values[0])
             if len(self.used_export_options) == 3:
