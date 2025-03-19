@@ -1,7 +1,13 @@
-from utils import *
-from discord import app_commands, ui
+import discord
+from discord import app_commands
 from discord.ext import commands
-from utils_code import *
+from utils_code import (
+    validate_url,
+    validate_string,
+    validate_password,
+    generate_code_snippet,
+)
+
 
 class genCode(commands.Cog):
     def __init__(self, bot):
@@ -10,7 +16,7 @@ class genCode(commands.Cog):
     @app_commands.command(
         name="get-code",
         description="Get the code to use the https://spoo.me API in your preferred language to shorten a URL 🔗",
-        )
+    )
     @app_commands.guild_only()
     @app_commands.choices(
         language=[
@@ -23,7 +29,9 @@ class genCode(commands.Cog):
             app_commands.Choice(name="HTTP", value="HTTP"),
             app_commands.Choice(name="Java", value="Java"),
             app_commands.Choice(name="JavaScript-Fetch", value="JavaScript-Fetch"),
-            app_commands.Choice(name="JavaScript-XMLHttpRequest", value="JavaScript-XMLHttpRequest"),
+            app_commands.Choice(
+                name="JavaScript-XMLHttpRequest", value="JavaScript-XMLHttpRequest"
+            ),
             app_commands.Choice(name="Kotlin", value="Kotlin"),
             app_commands.Choice(name="Node.js-Requests", value="Node.js-Requests"),
             app_commands.Choice(name="Node.js-Axios", value="Node.js-Axios"),
@@ -42,29 +50,49 @@ class genCode(commands.Cog):
         max_clicks="The maximum number of clicks for the URL",
         password="The password for the URL",
     )
-    async def get_code(self, interaction: discord.Interaction, language:app_commands.Choice[str] , url: str, alias:str = None, max_clicks: int=None, password: str=None):
-
+    async def get_code(
+        self,
+        interaction: discord.Interaction,
+        language: app_commands.Choice[str],
+        url: str,
+        alias: str = None,
+        max_clicks: int = None,
+        password: str = None,
+    ):
         await interaction.response.defer()
 
-        code, lang = generate_code_snippet(language=language.value, long_url=url, alias=alias, max_clicks=max_clicks, password=password)
+        code, lang = generate_code_snippet(
+            language=language.value,
+            long_url=url,
+            alias=alias,
+            max_clicks=max_clicks,
+            password=password,
+        )
 
         soft_errors = []
 
         if not validate_url(url):
             url = url[:150] + "..." if len(url) > 150 else url
-            soft_errors.append(f"- ```'{url}' is not a valid URL, the API might return an error```")
+            soft_errors.append(
+                f"- ```'{url}' is not a valid URL, the API might return an error```"
+            )
         if alias is not None and not validate_string(alias):
             alias = alias[:150] + "..." if len(alias) > 150 else alias
-            soft_errors.append(f"- ```'{alias}' is not a valid alias, the API might return an error```")
+            soft_errors.append(
+                f"- ```'{alias}' is not a valid alias, the API might return an error```"
+            )
         if alias is not None and len(alias) > 15:
             alias = alias[:150] + "..." if len(alias) > 150 else alias
-            soft_errors.append(f"- ```'{alias}' is too long, the API will strip it to 15 characters```")
+            soft_errors.append(
+                f"- ```'{alias}' is too long, the API will strip it to 15 characters```"
+            )
         if password is not None and not validate_password(password):
             password = password[:150] + "..." if len(password) > 150 else password
-            soft_errors.append(f"- ```'{password}' is not a valid password, the API might return an error. Password must be atleast 8 characters long, must contain a letter and a number and a special character either '@' or '.' and cannot be consecutive```")
+            soft_errors.append(
+                f"- ```'{password}' is not a valid password, the API might return an error. Password must be atleast 8 characters long, must contain a letter and a number and a special character either '@' or '.' and cannot be consecutive```"
+            )
 
         if len(code) <= 4096:
-
             embed = discord.Embed(
                 title=f"{language.value} code to Use spoo.me's API",
                 color=discord.Color.blurple(),
@@ -73,23 +101,32 @@ class genCode(commands.Cog):
             )
 
             if len(soft_errors) > 0:
-                embed.add_field(name="Soft Warnings", value="\n".join(soft_errors), inline=False)
+                embed.add_field(
+                    name="Soft Warnings", value="\n".join(soft_errors), inline=False
+                )
 
             try:
-                embed.set_footer(text=f"Requested by {interaction.user}", icon_url=interaction.user.avatar.url)
-            except:
-                embed.set_footer(text=f"Requested by {interaction.user}", icon_url=interaction.user.default_avatar.url)
+                embed.set_footer(
+                    text=f"Requested by {interaction.user}",
+                    icon_url=interaction.user.avatar.url,
+                )
+            except Exception:
+                embed.set_footer(
+                    text=f"Requested by {interaction.user}",
+                    icon_url=interaction.user.default_avatar.url,
+                )
 
             await interaction.followup.send(embed=embed)
 
         else:
-            message = f"## {language.value} Code to use spoo.me's API \n```{lang}\n{code}```"
+            message = (
+                f"## {language.value} Code to use spoo.me's API \n```{lang}\n{code}```"
+            )
 
             if len(soft_errors) > 0:
                 message += "\n\nSoft Warnings\n" + "\n".join(soft_errors)
 
             await interaction.followup.send(message)
-
 
     @get_code.error
     async def get_code_error(self, interaction, error):

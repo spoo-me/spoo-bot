@@ -19,7 +19,7 @@ def run():
     try:
         server = subprocess.Popen(["gunicorn", "-w", "4", "api:app"])
         return server
-    except:
+    except Exception:
         app.run(host="0.0.0.0", port=8080)
 
 

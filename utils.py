@@ -1,5 +1,14 @@
-from constants import *
-
+from constants import TOKEN
+import requests
+from py_spoo_url import Shortener
+from typing import Literal
+import geopandas as gpd
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.pyplot as plt
+import matplotlib
+import discord
+import random
+import datetime
 
 shortener = Shortener()
 
@@ -150,7 +159,6 @@ def generate_chart(
                 "borderRadius": 10,
                 "borderColor": backgrounds[index][1],
                 "lineTension": 0.5,
-                "fill": "origin",
             }
         )
 
@@ -162,7 +170,7 @@ def generate_chart(
     return resp.json()
 
 
-def make_countries_heatmap(
+def generate_countries_heatmap(
     data,
     cmap: Literal[
         "YlOrRd", "viridis", "plasma", "inferno", "RdPu_r", "pink", "turbo"
@@ -263,7 +271,7 @@ async def generate_error_message(
             text=f"{interaction.user} used /{interaction.command.name}",
             icon_url=interaction.user.avatar,
         )
-    except:
+    except Exception:
         embed.set_footer(
             text=f"{interaction.user} used /{interaction.command.name}",
             icon_url=interaction.user.default_avatar,
@@ -287,7 +295,7 @@ async def generate_command_error_embed(
             text=f"{interaction.user.name} used /{command_name}",
             icon_url=interaction.user.avatar,
         )
-    except:
+    except Exception:
         embed.set_footer(
             text=f"{interaction.user.name} used /{command_name}",
             icon_url=interaction.user.default_avatar,

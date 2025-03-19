@@ -4,16 +4,14 @@ import random
 import statistics
 import sys
 import time
-from constants import TOKEN
 from discord.ext import commands
 import discord
-from utils import *
-from api import *
+from constants import TOKEN
+from api import keep_alive
+from utils import welcome_gifs, commands_
 
 start_time = None
 latencies = []
-
-# command to show the code to use the api based on the user selected language
 
 
 class spooBot(commands.Bot):
@@ -224,7 +222,7 @@ async def invite(ctx):
             text="Information requested by: {}".format(ctx.author.name),
             icon_url=ctx.author.avatar.url,
         )
-    except:
+    except Exception:
         embed.set_footer(
             text="Information requested by: {}".format(ctx.author.name),
             icon_url=ctx.author.default_avatar.url,
@@ -270,7 +268,7 @@ async def stats(ctx):
             text="Information requested by: {}".format(ctx.author.name),
             icon_url=ctx.author.avatar.url,
         )
-    except:
+    except Exception:
         embed.set_footer(
             text="Information requested by: {}".format(ctx.author.name),
             icon_url=ctx.author.default_avatar.url,
@@ -300,7 +298,7 @@ async def support(ctx):
             text="Information requested by: {}".format(ctx.author.name),
             icon_url=ctx.author.avatar.url,
         )
-    except:
+    except Exception:
         embed.set_footer(
             text="Information requested by: {}".format(ctx.author.name),
             icon_url=ctx.author.default_avatar.url,
@@ -346,7 +344,7 @@ async def about(ctx):
             text="Information requested by: {}".format(ctx.author.name),
             icon_url=ctx.author.avatar.url,
         )
-    except:
+    except Exception:
         embed.set_footer(
             text="Information requested by: {}".format(ctx.author.name),
             icon_url=ctx.author.default_avatar.url,
