@@ -43,15 +43,6 @@ class spooBot(commands.Bot):
             # Start the stats update task
             self.update_stats.start()
 
-        try:
-            file = r"assets\\pfp-animated.gif"
-            with open(file, "rb") as avatar:
-                await self.user.edit(avatar=avatar.read())
-                print("Applied Animated Avatar")
-        except Exception as e:
-            print(e, file=sys.stdout)
-            pass
-
         print(f"Logged in as {self.user.name} (ID: {self.user.id})")
         print(f"Connected to {len(self.guilds)} guilds")
 
