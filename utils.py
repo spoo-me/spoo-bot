@@ -23,19 +23,19 @@ waiting_gifs = [
 ]
 
 welcome_gifs = [
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-0j.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-3k.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-6u.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-8W.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-DC.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-Gv.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-J2.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-ZY.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-f5.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-hy.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-kU.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-nh.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/assets/blinkiesCafe-xO.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-0j.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-3k.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-6u.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-8W.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-DC.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-Gv.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-J2.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-ZY.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-f5.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-hy.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-kU.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-nh.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-xO.gif?raw=true",
 ]
 
 commands_ = {

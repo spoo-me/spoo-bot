@@ -124,7 +124,7 @@ class genCode(commands.Cog):
             )
 
             if len(soft_errors) > 0:
-                message += "\n\nSoft Warnings\n" + "\n".join(soft_errors)
+                message += "\n\nSoft Warnings ⚠️\n" + "\n".join(soft_errors)
 
             await interaction.followup.send(message)
 
