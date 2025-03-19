@@ -9,6 +9,7 @@ import matplotlib
 import discord
 import random
 import datetime
+import aiohttp
 
 shortener = Shortener()
 
@@ -83,6 +84,18 @@ def get_server_name_and_icon(server_id):
         # Handle errors
         print(f"Error: {response.status_code}")
         return None
+
+
+async def fetch_spoo_stats():
+    """Fetch statistics from spoo.me API"""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://spoo.me/metric") as response:
+                if response.status == 200:
+                    return await response.json()
+    except Exception as e:
+        print(f"Error fetching stats: {e}")
+    return None
 
 
 def generate_chart(

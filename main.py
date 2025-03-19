@@ -4,12 +4,11 @@ import random
 import statistics
 import sys
 import time
-import aiohttp
 from discord.ext import commands, tasks
 import discord
 from constants import TOKEN
 from api import keep_alive
-from utils import welcome_gifs, commands_
+from utils import welcome_gifs, commands_, fetch_spoo_stats
 
 start_time = None
 latencies = []
@@ -56,17 +55,6 @@ class spooBot(commands.Bot):
         print(f"Logged in as {self.user.name} (ID: {self.user.id})")
         print(f"Connected to {len(self.guilds)} guilds")
 
-    async def fetch_spoo_stats(self):
-        """Fetch statistics from spoo.me API"""
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get("https://spoo.me/metric") as response:
-                    if response.status == 200:
-                        return await response.json()
-        except Exception as e:
-            print(f"Error fetching stats: {e}", file=sys.stdout)
-        return None
-
     @tasks.loop(minutes=10)
     async def update_stats(self):
         """Update channel names with current statistics"""
@@ -82,7 +70,7 @@ class spooBot(commands.Bot):
                 )  # Total shortlinks channel
 
         if self.stats_channel_1 and self.stats_channel_2:
-            stats = await self.fetch_spoo_stats()
+            stats = await fetch_spoo_stats()
             if stats:
                 try:
                     await self.stats_channel_1.edit(
@@ -379,6 +367,19 @@ async def about(ctx):
         value="```SpooBot was made by the devs of spoo.me. 🙏```",
         inline=False,
     )
+
+    stats = await fetch_spoo_stats()
+    if stats:
+        embed.add_field(
+            name="Total Shortlinks 🔗",
+            value=f"```{stats['total-shortlinks']}```",
+            inline=True,
+        )
+        embed.add_field(
+            name="Total Clicks 📈",
+            value=f"```{stats['total-clicks']}```",
+            inline=True,
+        )
 
     user = bot.get_user(1202738385194717205)
     embed.set_thumbnail(url=user.avatar.url)
