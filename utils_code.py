@@ -254,7 +254,7 @@ func main() {{
     longUrl := "{long_url}"
     encodedLongUrl := url.QueryEscape(longUrl)
 
-    payload := strings.NewReader("url="+encodedLongUrl{f'+"{form_params}"' if form_params != "" else ""})
+    payload := strings.NewReader("url="+encodedLongUrl{{ '+"{}"'.format(form_params) if form_params != "" else "" }})
 
     req, err := http.NewRequest("POST", apiUrl, payload)
     if err != nil {{
