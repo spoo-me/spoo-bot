@@ -1,5 +1,11 @@
-from typing import Dict, List, Optional
-from pydantic import BaseModel, ValidationError
+from typing import Dict, List, Optional, Annotated
+from pydantic import (
+    BaseModel,
+    ValidationError,
+    HttpUrl,
+    Field,
+    field_validator,
+)
 import tomli
 import os
 from pathlib import Path
@@ -48,50 +54,99 @@ class Command(BaseModel):
 
 
 class CommandCooldown(BaseModel):
-    count: int
-    seconds: int
+    count: Annotated[int, Field(gt=0)]
+    seconds: Annotated[int, Field(gt=0, le=604800)]  # Max 1 week
+
+    model_config = {
+        "error_msg_templates": {
+            "greater_than": "Value must be positive",
+            "less_than_equal": "Cooldown duration cannot exceed 1 week (604800 seconds)"
+        }
+    }
 
 
 # Chart Models
 class ChartColors(BaseModel):
-    platform: List[List[str]]
-    browser: List[List[str]]
-    referrer: List[List[str]]
-    timeline: List[List[str]]
+    platform: List[List[Annotated[str, Field(pattern=r'^0x[0-9a-fA-F]{6}$')]]]
+    browser: List[List[Annotated[str, Field(pattern=r'^0x[0-9a-fA-F]{6}$')]]]
+    referrer: List[List[Annotated[str, Field(pattern=r'^0x[0-9a-fA-F]{6}$')]]]
+    timeline: List[List[Annotated[str, Field(pattern=r'^0x[0-9a-fA-F]{6}$')]]]
 
+    model_config = {
+        "error_msg_templates": {
+            "pattern_mismatch": "Colors must be in format 0xRRGGBB"
+        }
+    }
 
 class ChartPadding(BaseModel):
-    left: int
-    right: int
-    top: int
-    bottom: int
+    left: Annotated[int, Field(ge=0, le=100)]
+    right: Annotated[int, Field(ge=0, le=100)]
+    top: Annotated[int, Field(ge=0, le=100)]
+    bottom: Annotated[int, Field(ge=0, le=100)]
+
+    model_config = {
+        "error_msg_templates": {
+            "greater_than_equal": "Padding must be non-negative",
+            "less_than_equal": "Padding cannot exceed 100 pixels"
+        }
+    }
 
 
 class ChartStyle(BaseModel):
-    background: str
-    grid_color: str
-    text_color: str
-    font_style: str
-    font_size: int
-    border_width: int
-    border_radius: int
-    line_tension: float
+    background: Annotated[str, Field(pattern=r"^0x[0-9a-fA-F]{6}$")]
+    grid_color: Annotated[str, Field(pattern=r"^0x[0-9a-fA-F]{6}$")]
+    text_color: Annotated[str, Field(pattern=r"^0x[0-9a-fA-F]{6}$")]
+    font_style: Annotated[str, Field(pattern=r'^(normal|italic|bold)$')]
+    font_size: Annotated[int, Field(ge=8, le=72)]  # Reasonable font size range
+    border_width: Annotated[int, Field(ge=0, le=10)]
+    border_radius: Annotated[int, Field(ge=0, le=50)]
+    line_tension: Annotated[float, Field(ge=0, le=1)]
     padding: ChartPadding
+
+    model_config = {
+        "error_msg_templates": {
+            "pattern_mismatch": {
+                "font_style": "Font style must be 'normal', 'italic', or 'bold'",
+                "__default__": "Colors must be in format 0xRRGGBB"
+            }
+        }
+    }
 
 
 class ChartScales(BaseModel):
-    grid_color: str
-    tick_color: str
+    grid_color: Annotated[str, Field(pattern=r'^0x[0-9a-fA-F]{6}$')]
+    tick_color: Annotated[str, Field(pattern=r"^0x[0-9a-fA-F]{6}$")]
+
+    model_config = {
+        "error_msg_templates": {
+            "pattern_mismatch": "Colors must be in format 0xRRGGBB"
+        }
+    }
 
 
 class ChartPluginTitle(BaseModel):
-    color: str
-    font_style: str
-    font_size: int
+    color: Annotated[str, Field(pattern=r"^0x[0-9a-fA-F]{6}$")]
+    font_style: Annotated[str, Field(pattern=r'^(normal|italic|bold)$')]
+    font_size: Annotated[int, Field(ge=8, le=72)]
+
+    model_config = {
+        "error_msg_templates": {
+            "pattern_mismatch": {
+                "font_style": "Font style must be 'normal', 'italic', or 'bold'",
+                "__default__": "Colors must be in format 0xRRGGBB"
+            }
+        }
+    }
 
 
 class ChartPluginLegend(BaseModel):
-    labels_color: str
+    labels_color: Annotated[str, Field(pattern=r'^0x[0-9a-fA-F]{6}$')]
+
+    model_config = {
+        "error_msg_templates": {
+            "pattern_mismatch": "Colors must be in format 0xRRGGBB"
+        }
+    }
 
 
 class ChartPlugins(BaseModel):
@@ -100,11 +155,18 @@ class ChartPlugins(BaseModel):
 
 
 class ChartHeatmap(BaseModel):
-    dpi: int
-    alpha: float
-    pad_inches: float
-    bbox_inches: str
+    dpi: Annotated[int, Field(ge=72, le=600)]  # Standard DPI range
+    alpha: Annotated[float, Field(ge=0, le=1)]
+    pad_inches: Annotated[float, Field(ge=0, le=2)]
+    bbox_inches: Annotated[str, Field(pattern=r'^(tight|standard)$')]
 
+    model_config = {
+        "error_msg_templates": {
+            "greater_than_equal": "Value must be at least {ge}",
+            "less_than_equal": "Value cannot exceed {le}",
+            "pattern_mismatch": "bbox_inches must be either 'tight' or 'standard'"
+        }
+    }
 
 class Charts(BaseModel):
     colors: ChartColors
@@ -116,11 +178,17 @@ class Charts(BaseModel):
 
 # UI Models
 class UIColors(BaseModel):
-    primary: str
-    success: str
-    error: str
-    warning: str
-    info: str
+    primary: Annotated[str, Field(pattern=r'^0x[0-9a-fA-F]{6}$')]
+    success: Annotated[str, Field(pattern=r'^0x[0-9a-fA-F]{6}$')]
+    error: Annotated[str, Field(pattern=r'^0x[0-9a-fA-F]{6}$')]
+    warning: Annotated[str, Field(pattern=r'^0x[0-9a-fA-F]{6}$')]
+    info: Annotated[str, Field(pattern=r'^0x[0-9a-fA-F]{6}$')]
+
+    model_config = {
+        "error_msg_templates": {
+            "pattern_mismatch": "must be a hex color in format 0xRRGGBB"
+        }
+    }
 
 
 class UIMessages(BaseModel):
@@ -136,23 +204,40 @@ class UI(BaseModel):
 
 # URL Models
 class SocialShareUrls(BaseModel):
-    twitter: str
-    facebook: str
-    telegram: str
-    whatsapp: str
-    reddit: str
-    snapchat: str
+    twitter: HttpUrl
+    facebook: HttpUrl
+    telegram: HttpUrl
+    whatsapp: HttpUrl
+    reddit: HttpUrl
+    snapchat: HttpUrl
+
+    @field_validator('*')
+    @classmethod
+    def validate_social_url_format(cls, v: HttpUrl) -> HttpUrl:
+        # Convert to string for manipulation
+        url_str = str(v)
+        if not url_str.endswith('='):
+            raise ValueError('Social share URLs must end with "=" for parameter appending')
+        return v
 
 
 class Urls(BaseModel):
-    api_base: str
-    spoo_metrics: str
-    qr_api_base: str
-    charts_api_base: str
-    discord_invite: str
-    bot_invite: str
-    github: str
+    api_base: HttpUrl
+    spoo_metrics: HttpUrl
+    qr_api_base: HttpUrl
+    charts_api_base: HttpUrl
+    discord_invite: HttpUrl
+    bot_invite: HttpUrl
+    github: HttpUrl
     social_share: SocialShareUrls
+
+    @field_validator('*')
+    @classmethod
+    def must_be_https(cls, v: HttpUrl) -> HttpUrl:
+        url_str = str(v)
+        if not url_str.startswith('https://'):
+            raise ValueError('All URLs must use HTTPS for security')
+        return v
 
 
 # Server Models
@@ -178,14 +263,26 @@ class Server(BaseModel):
 
 # Discord Models
 class DiscordChannels(BaseModel):
-    welcome: str
-    stats_clicks: str
-    stats_shortlinks: str
+    welcome: Annotated[str, Field(pattern=r'^\d{17,19}$')]
+    stats_clicks: Annotated[str, Field(pattern=r'^\d{17,19}$')]
+    stats_shortlinks: Annotated[str, Field(pattern=r'^\d{17,19}$')]
+
+    model_config = {
+        "error_msg_templates": {
+            "pattern_mismatch": "Channel IDs must be 17-19 digits"
+        }
+    }
 
 
 class DiscordIds(BaseModel):
-    parent_server: str
+    parent_server: Annotated[str, Field(pattern=r'^\d{17,19}$')]
     channels: DiscordChannels
+
+    model_config = {
+        "error_msg_templates": {
+            "pattern_mismatch": "Discord IDs must be 17-19 digits"
+        }
+    }
 
 
 class Discord(BaseModel):
@@ -205,23 +302,63 @@ class BotEmojis(BaseModel):
 
 
 class Bot(BaseModel):
-    command_prefix: str
+    command_prefix: Annotated[str, Field(min_length=1, max_length=3)]
     name: str
     description: str
-    avatar_url: str
-    bot_id: str
+    avatar_url: HttpUrl
+    bot_id: Annotated[str, Field(pattern=r'^\d{17,19}$')]
     bot_token: str
     custom_status: str
-    super_user_id: str
+    super_user_id: Annotated[str, Field(pattern=r'^\d{17,19}$')]
     emojis: BotEmojis
+
+    @field_validator('command_prefix')
+    @classmethod
+    def validate_prefix_chars(cls, v: str) -> str:
+        allowed = set('!@#$%^&*()_+-=[]{}|;:,.<>?/')
+        if not all(c in allowed for c in v):
+            raise ValueError('Command prefix must only contain special characters')
+        return v
+
+    model_config = {
+        "error_msg_templates": {
+            "pattern_mismatch": "Invalid Discord ID format (must be 17-19 digits)",
+            "string_too_short": "Command prefix cannot be empty",
+            "string_too_long": "Command prefix cannot exceed 3 characters"
+        }
+    }
 
 
 # Assets Model
 class Assets(BaseModel):
-    ping_uri: str
-    waiting_gifs: List[str]
-    welcome_gifs: List[str]
+    ping_uri: HttpUrl
+    waiting_gifs: List[HttpUrl]
+    welcome_gifs: List[HttpUrl]
 
+    @field_validator('waiting_gifs', 'welcome_gifs')
+    @classmethod
+    def validate_gif_urls(cls, urls: List[HttpUrl]) -> List[HttpUrl]:
+        for url in urls:
+            url_str = str(url)
+            if not url_str.endswith('.gif'):
+                raise ValueError('All animation URLs must end with .gif')
+            if not url_str.startswith('https://'):
+                raise ValueError('All URLs must use HTTPS for security')
+        return urls
+
+    @field_validator('ping_uri')
+    @classmethod
+    def validate_ping_url(cls, v: HttpUrl) -> HttpUrl:
+        url_str = str(v)
+        if not url_str.startswith('https://'):
+            raise ValueError('All URLs must use HTTPS for security')
+        return v
+
+    model_config = {
+        "error_msg_templates": {
+            "type_error": "All URLs must be valid HTTPS URLs"
+        }
+    }
 
 # Cooldowns Model
 class Cooldowns(BaseModel):
