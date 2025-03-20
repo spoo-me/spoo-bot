@@ -3,7 +3,7 @@ from typing import Literal
 import re
 import validators
 
-available_languages = [
+available_languages: list[str] = [
     "Python-Requests",
     "Python-Aiohttp",
     "C",

@@ -10,14 +10,17 @@ from utils import (
     generate_command_error_embed,
     generate_countries_heatmap,
 )
+from config import ChartColors, config
 
 
 class StatsSelectView(discord.ui.View):
-    def __init__(self, stats: Statistics):
+    def __init__(self, stats: Statistics) -> None:
         super().__init__(timeout=None)
         self.stats: Statistics = stats
         self.used_export_options = []
         self.used_charts_options = []
+        self.chart_colors: ChartColors = config.ui.charts.colors
+        self.base_url: str = config.urls.api_base
 
     @discord.ui.select(
         placeholder="➕ Additional Statistics Chart",
@@ -70,7 +73,7 @@ class StatsSelectView(discord.ui.View):
                 embed=discord.Embed(
                     title="An Error Occured",
                     description=f"```{select.values[0]} option has already been used before.```",
-                    color=discord.Color.red(),
+                    color=int(config.ui.colors.error, 16),
                 ),
                 ephemeral=True,
             )
@@ -84,10 +87,7 @@ class StatsSelectView(discord.ui.View):
                     self.stats.platforms_analysis,
                     self.stats.unique_platforms_analysis,
                 ],
-                backgrounds=[
-                    ["rgba(0, 0, 255, 0.15)", "rgb(0, 0, 255)"],
-                    ["rgba(255, 69, 0, 0.15)", "rgb(255, 69, 0)"],
-                ],
+                backgrounds=self.chart_colors.platform,
                 labels=["Clicks", "Unique Clicks"],
                 title="Platforms Analysis Chart",
                 type="bar",
@@ -95,9 +95,9 @@ class StatsSelectView(discord.ui.View):
 
             embed = discord.Embed(
                 title="Platforms Analysis Chart 📱",
-                color=discord.Color.blurple(),
+                color=int(config.ui.colors.primary, 16),
                 timestamp=interaction.created_at,
-                url=f"https://spoo.me/stats/{self.stats.short_code}",
+                url=f"{self.base_url}/stats/{self.stats.short_code}",
                 description="This chart shows the trend of platforms used to access the URL",
             )
 
@@ -126,19 +126,16 @@ class StatsSelectView(discord.ui.View):
                     self.stats.browsers_analysis,
                     self.stats.unique_browsers_analysis,
                 ],
-                backgrounds=[
-                    ["rgba(153, 102, 255, 0.15)", "rgb(153, 102, 255)"],
-                    ["rgba(255, 159, 64, 0.15)", "rgb(255, 159, 64)"],
-                ],
+                backgrounds=self.chart_colors.browser,
                 labels=["Clicks", "Unique Clicks"],
                 title="Browsers Analysis Chart",
                 type="bar",
             )
             embed = discord.Embed(
                 title="Browsers Analysis Chart 🌐",
-                color=discord.Color.blurple(),
+                color=int(config.ui.colors.primary, 16),
                 timestamp=interaction.created_at,
-                url=f"https://spoo.me/stats/{self.stats.short_code}",
+                url=f"{self.base_url}/stats/{self.stats.short_code}",
                 description="This chart shows the trend of browsers used to access the URL",
             )
             embed.set_image(url=resp["url"])
@@ -146,8 +143,8 @@ class StatsSelectView(discord.ui.View):
                 name="Short Code", value=f"```{self.stats.short_code}```", inline=False
             )
 
-            browser_data = json.dumps(self.stats.browsers_analysis)
-            unique_browser_data = json.dumps(self.stats.unique_browsers_analysis)
+            browser_data: str = json.dumps(self.stats.browsers_analysis)
+            unique_browser_data: str = json.dumps(self.stats.unique_browsers_analysis)
 
             embed.add_field(
                 name="Raw Non-Unique Data",
@@ -166,19 +163,16 @@ class StatsSelectView(discord.ui.View):
                     self.stats.referrers_analysis,
                     self.stats.unique_referrers_analysis,
                 ],
-                backgrounds=[
-                    ["rgba(255, 105, 180, 0.15)", "rgb(255, 105, 180)"],
-                    ["rgba(60, 179, 113, 0.15)", "rgb(60, 179, 113)"],
-                ],
+                backgrounds=self.chart_colors.referrer,
                 labels=["Clicks", "Unique Clicks"],
                 title="Referrers Analysis Chart",
                 type="bar",
             )
             embed = discord.Embed(
                 title="Referrers Analysis Chart 🔗",
-                color=discord.Color.blurple(),
+                color=int(config.ui.colors.primary, 16),
                 timestamp=interaction.created_at,
-                url=f"https://spoo.me/stats/{self.stats.short_code}",
+                url=f"{self.base_url}/stats/{self.stats.short_code}",
                 description="This chart shows the trend of referrers used to access the URL",
             )
             embed.set_image(url=resp["url"])
@@ -206,19 +200,16 @@ class StatsSelectView(discord.ui.View):
 
             resp = generate_chart(
                 data=[click_data, unique_click_data],
-                backgrounds=[
-                    ["rgba(255, 159, 64, 0.15)", "rgb(255, 159, 64)"],
-                    ["rgba(201, 203, 207, 0.25)", "rgb(201, 203, 207)"],
-                ],
+                backgrounds=self.chart_colors.timeline,
                 labels=["Clicks", "Unique Clicks"],
                 title="Clicks Over Time Chart",
                 type="line",
             )
             embed = discord.Embed(
                 title="Clicks Over Time Chart 📈",
-                color=discord.Color.blurple(),
+                color=int(config.ui.colors.primary, 16),
                 timestamp=interaction.created_at,
-                url=f"https://spoo.me/stats/{self.stats.short_code}",
+                url=f"{self.base_url}/stats/{self.stats.short_code}",
                 description="This chart shows the trend of clicks over the last 30 days",
             )
             embed.set_image(url=resp["url"])
@@ -241,20 +232,23 @@ class StatsSelectView(discord.ui.View):
             )
 
         elif select.values[0] == "Countries Heatmap 🔥":
-            map = generate_countries_heatmap(data=self.stats.country_analysis, alpha=1)
+            heatmap_config = config.ui.charts.heatmap
+            map = generate_countries_heatmap(
+                data=self.stats.country_analysis, alpha=heatmap_config.alpha
+            )
             map.savefig(
                 "heatmap.png",
                 format="png",
-                bbox_inches="tight",
-                pad_inches=0.5,
-                dpi=300,
+                bbox_inches=heatmap_config.bbox_inches,
+                pad_inches=heatmap_config.pad_inches,
+                dpi=heatmap_config.dpi,
             )
 
             embed = discord.Embed(
                 title="Countries Heatmap 🔥",
-                color=discord.Color.blurple(),
+                color=int(config.ui.colors.primary, 16),
                 timestamp=interaction.created_at,
-                url=f"https://spoo.me/stats/{self.stats.short_code}",
+                url=f"{self.base_url}/stats/{self.stats.short_code}",
                 description="This heatmap shows the countries from where the URL was accessed",
             )
             embed.set_image(url="attachment://heatmap.png")
@@ -272,12 +266,12 @@ class StatsSelectView(discord.ui.View):
 
             try:
                 embed.set_footer(
-                    text="Requested by {}".format(interaction.user.name),
+                    text=f"Requested by {interaction.user.name}",
                     icon_url=interaction.user.avatar,
                 )
             except Exception:
                 embed.set_footer(
-                    text="Requested by {}".format(interaction.user.name),
+                    text=f"Requested by {interaction.user.name}",
                     icon_url=interaction.user.default_avatar,
                 )
 
@@ -293,24 +287,25 @@ class StatsSelectView(discord.ui.View):
             return
 
         elif select.values[0] == "Unique Countries Heatmap 🌍":
+            heatmap_config = config.ui.charts.heatmap
             map = generate_countries_heatmap(
                 data=self.stats.unique_country_analysis,
-                alpha=1,
+                alpha=heatmap_config.alpha,
                 title="Unique Countries Heatmap",
             )
             map.savefig(
                 "unique_heatmap.png",
                 format="png",
-                bbox_inches="tight",
-                pad_inches=0.5,
-                dpi=300,
+                bbox_inches=heatmap_config.bbox_inches,
+                pad_inches=heatmap_config.pad_inches,
+                dpi=heatmap_config.dpi,
             )
 
             embed = discord.Embed(
                 title="Unique Countries Heatmap 🌍",
-                color=discord.Color.blurple(),
+                color=int(config.ui.colors.primary, 16),
                 timestamp=interaction.created_at,
-                url=f"https://spoo.me/stats/{self.stats.short_code}",
+                url=f"{self.base_url}/stats/{self.stats.short_code}",
                 description="This heatmap shows the unique clicks countries where the URL was accessed",
             )
             embed.set_image(url="attachment://unique_heatmap.png")
@@ -328,12 +323,12 @@ class StatsSelectView(discord.ui.View):
 
             try:
                 embed.set_footer(
-                    text="Requested by {}".format(interaction.user.name),
+                    text=f"Requested by {interaction.user.name}",
                     icon_url=interaction.user.avatar,
                 )
             except Exception:
                 embed.set_footer(
-                    text="Requested by {}".format(interaction.user.name),
+                    text=f"Requested by {interaction.user.name}",
                     icon_url=interaction.user.default_avatar,
                 )
 
@@ -350,12 +345,12 @@ class StatsSelectView(discord.ui.View):
 
         try:
             embed.set_footer(
-                text="Requested by {}".format(interaction.user.name),
+                text=f"Requested by {interaction.user.name}",
                 icon_url=interaction.user.avatar,
             )
         except Exception:
             embed.set_footer(
-                text="Requested by {}".format(interaction.user.name),
+                text=f"Requested by {interaction.user.name}",
                 icon_url=interaction.user.default_avatar,
             )
 
@@ -395,13 +390,13 @@ class StatsSelectView(discord.ui.View):
     )
     async def export_data_callback(
         self, interaction: discord.Interaction, select: discord.ui.Select
-    ):
+    ) -> None:
         if select.values[0] in self.used_export_options:
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title="An Error Occured",
                     description=f"```{select.values[0]} option has already been used before.```",
-                    color=discord.Color.red(),
+                    color=int(config.ui.colors.error, 16),
                 ),
                 ephemeral=True,
             )
@@ -412,29 +407,20 @@ class StatsSelectView(discord.ui.View):
         try:
             embed = discord.Embed(
                 title="Data Export 📥",
-                description=f"Statistics export for `https://spoo.me/{self.stats.short_code}`",
-                color=discord.Color.green(),
+                description=f"Statistics export for `{self.base_url}/{self.stats.short_code}`",
+                color=int(config.ui.colors.success, 16),
                 timestamp=interaction.created_at,
-                url=f"https://spoo.me/stats/{self.stats.short_code}",
+                url=f"{self.base_url}/stats/{self.stats.short_code}",
             )
 
             if select.values[0] == "Export as JSON 🔑":
-                # Export the file
                 self.stats.export_data(filename="json_export.json", filetype="json")
-
-                # Get file size
-                file_size = round(
-                    os.path.getsize("json_export.json") / 1024, 2
-                )  # Convert to KB
-
-                # Add file information
+                file_size: float = round(os.path.getsize("json_export.json") / 1024, 2)
                 embed.add_field(
                     name="File Information",
                     value=f"```Size: {file_size} KB\nType: JSON```",
                     inline=False,
                 )
-
-                # Create Discord file object
                 file = discord.File(
                     "json_export.json",
                     filename=f"{self.stats.short_code}_json_export.json",
@@ -442,40 +428,24 @@ class StatsSelectView(discord.ui.View):
 
             elif select.values[0] == "Export as CSV 📝":
                 self.stats.export_data(filename="csv_export", filetype="csv")
-
-                # Get file size - CSV exports are zipped
-                file_size = round(
-                    os.path.getsize("csv_export.zip") / 1024, 2
-                )  # Convert to KB
-
-                # Add file information
+                file_size: float = round(os.path.getsize("csv_export.zip") / 1024, 2)
                 embed.add_field(
                     name="File Information",
                     value=f"```Size: {file_size} KB\nType: CSV```",
                     inline=False,
                 )
-
-                # Create Discord file object
                 file = discord.File(
                     "csv_export.zip", filename=f"{self.stats.short_code}_csv_export.zip"
                 )
 
             elif select.values[0] == "Export as Excel 📊":
                 self.stats.export_data(filename="excel_export.xlsx", filetype="xlsx")
-
-                # Get file size
-                file_size = round(
-                    os.path.getsize("excel_export.xlsx") / 1024, 2
-                )  # Convert to KB
-
-                # Add file information
+                file_size = round(os.path.getsize("excel_export.xlsx") / 1024, 2)
                 embed.add_field(
                     name="File Information",
                     value=f"```Size: {file_size} KB\nType: Excel```",
                     inline=False,
                 )
-
-                # Create Discord file object
                 file = discord.File(
                     "excel_export.xlsx",
                     filename=f"{self.stats.short_code}_excel_export.xlsx",
@@ -492,10 +462,9 @@ class StatsSelectView(discord.ui.View):
                     icon_url=interaction.user.default_avatar,
                 )
 
-            # Send the file
             await interaction.followup.send(embed=embed, file=file)
 
-            # Cleanup the exported file
+            # Cleanup exported files
             if select.values[0] == "Export as JSON 🔑":
                 os.remove("json_export.json")
             elif select.values[0] == "Export as CSV 📝":
@@ -516,31 +485,36 @@ class StatsSelectView(discord.ui.View):
                 embed=discord.Embed(
                     title="An Error Occured",
                     description=f"```{e}```",
-                    color=discord.Color.red(),
+                    color=int(config.ui.colors.error, 16),
                 )
             )
 
 
 class urlStats(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
 
     @app_commands.command(
         name="stats",
-        description="View URL Statistics 📊",
+        description=f"{config.commands['stats'].description} {config.commands['stats'].emoji}",
     )
     @app_commands.describe(
-        short_code="The short code of the url to view statistics for",
-        password="The password for the URL",
+        **{
+            param.name: f"{param.description}"
+            for param in config.commands["stats"].parameters
+        }
     )
     @app_commands.guild_only()
-    @app_commands.checks.cooldown(1, 30.0)
+    @app_commands.checks.cooldown(
+        config.cooldowns.short_term.count, config.cooldowns.short_term.seconds
+    )
     async def stats(
         self, interaction: discord.Interaction, short_code: str, password: str = None
-    ):
+    ) -> None:
         await interaction.response.send_message(
             embed=discord.Embed(
-                description="Fetching statistics...", color=discord.Color.blurple()
+                description="Fetching statistics...",
+                color=int(config.ui.colors.primary, 16),
             ),
             ephemeral=True,
         )
@@ -549,10 +523,10 @@ class urlStats(commands.Cog):
 
         embed = discord.Embed(
             title="URL Statistics 📊",
-            description=f"Statistics for short url - `https://spoo.me/{result.short_code}`",
-            color=discord.Color.blurple(),
+            description=f"Statistics for short url - `{config.urls.api_base}/{result.short_code}`",
+            color=int(config.ui.colors.primary, 16),
             timestamp=interaction.created_at,
-            url=f"https://spoo.me/stats/{result.short_code}",
+            url=f"{config.urls.api_base}/stats/{result.short_code}",
         )
 
         embed.add_field(
@@ -596,10 +570,7 @@ class urlStats(commands.Cog):
                 result.last_n_days_analysis(7),
                 result.last_n_days_unique_analysis(7),
             ],
-            backgrounds=[
-                ["rgba(75, 192, 192, 0.15)", "rgb(75, 192, 192)"],
-                ["rgba(85, 52, 235, .25)", "rgb(85, 52, 235)"],
-            ],
+            backgrounds=config.ui.charts.colors.timeline,
             labels=["Clicks", "Unique Clicks"],
             title="Clicks Over Time Chart",
             type="line",
@@ -617,12 +588,14 @@ class urlStats(commands.Cog):
     @stats.error
     async def stats_error(
         self, interaction: discord.Interaction, error: app_commands.AppCommandError
-    ):
+    ) -> None:
         if isinstance(error, app_commands.CommandOnCooldown):
             embed = await generate_error_message(
                 interaction,
                 error,
-                cooldown_configuration=["- ```1 time every 30 seconds```"],
+                cooldown_configuration=[
+                    f"- ```{config.cooldowns.short_term.count} time every {config.cooldowns.short_term.seconds} seconds```",
+                ],
             )
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
@@ -630,6 +603,6 @@ class urlStats(commands.Cog):
             await interaction.channel.send(embed=embed)
 
 
-async def setup(bot):
+async def setup(bot) -> None:
     await bot.add_cog(urlStats(bot))
-    print("Loaded stats cog")
+    print(f"Loaded {urlStats.__name__}")

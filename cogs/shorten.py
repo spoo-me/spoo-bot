@@ -1,44 +1,47 @@
-# from utils import *
 import discord
 from discord import app_commands
 from discord.ext import commands
 from utils import shortener, generate_error_message, generate_command_error_embed
+from config import BotEmojis, SocialShareUrls, config
 
 
 class shortenUrl(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
 
     class buttonView(discord.ui.View):
-        def __init__(self, short_code):
+        def __init__(self, short_code) -> None:
             super().__init__(timeout=None)
+            base_url: str = config.urls.api_base
+            social: SocialShareUrls = config.urls.social_share
+            emojis: BotEmojis = config.bot.emojis
 
             stats_button = discord.ui.Button(
-                label="View Statistics", url=f"https://spoo.me/stats/{short_code}"
+                label="View Statistics", url=f"{base_url}/stats/{short_code}"
             )
             tweet_button = discord.ui.Button(
-                url=f"https://twitter.com/intent/tweet?url=https://spoo.me/{short_code}",
-                emoji="<:twitter:1203389152712724581>",
+                url=f"{social.twitter}{base_url}/{short_code}",
+                emoji=f"<:twitter:{emojis.twitter}>",
             )
             facebook_button = discord.ui.Button(
-                url=f"https://www.facebook.com/sharer/sharer.php?u=https://spoo.me/{short_code}",
-                emoji="<:facebook:1203389150028369970>",
+                url=f"{social.facebook}{base_url}/{short_code}",
+                emoji=f"<:facebook:{emojis.facebook}>",
             )
             telegram_button = discord.ui.Button(
-                url=f"https://t.me/share/url?url=https://spoo.me/{short_code}",
-                emoji="<:telegram:1203389144756391966>",
+                url=f"{social.telegram}{base_url}/{short_code}",
+                emoji=f"<:telegram:{emojis.telegram}>",
             )
             whatsapp_button = discord.ui.Button(
-                url=f"https://wa.me/?text=https://spoo.me/{short_code}",
-                emoji="<:whatsapp:1203389130428518460>",
+                url=f"{social.whatsapp}{base_url}/{short_code}",
+                emoji=f"<:whatsapp:{emojis.whatsapp}>",
             )
             reddit_button = discord.ui.Button(
-                url=f"https://www.reddit.com/submit?url=https://spoo.me/{short_code}",
-                emoji="<:reddit:1203389126100131910>",
+                url=f"{social.reddit}{base_url}/{short_code}",
+                emoji=f"<:reddit:{emojis.reddit}>",
             )
             snapchat_button = discord.ui.Button(
-                url=f"https://www.snapchat.com/scan?attachmentUrl=https://spoo.me/{short_code}",
-                emoji="<:snapchat:1203389123784609812>",
+                url=f"{social.snapchat}{base_url}/{short_code}",
+                emoji=f"<:snapchat:{emojis.snapchat}>",
             )
 
             self.add_item(stats_button)
@@ -51,18 +54,24 @@ class shortenUrl(commands.Cog):
 
     @app_commands.command(
         name="shorten",
-        description="Shorten a Long URL 🤏🏻",
+        description=f"{config.commands['shorten'].description} {config.commands['shorten'].emoji}",
     )
     @app_commands.describe(
-        url="The URL to shorten",
-        alias="The custom alias for the URL",
-        max_clicks="The maximum number of clicks for the URL",
-        password="The password for the URL",
+        **{
+            param.name: f"{param.description}"
+            for param in config.commands["shorten"].parameters
+        }
     )
     @app_commands.guild_only()
-    @app_commands.checks.cooldown(1, 10.0)
-    @app_commands.checks.cooldown(5, 60.0)
-    @app_commands.checks.cooldown(200, 24 * 60 * 60.0)
+    @app_commands.checks.cooldown(
+        config.cooldowns.short_term.count, config.cooldowns.short_term.seconds
+    )
+    @app_commands.checks.cooldown(
+        config.cooldowns.medium_term.count, config.cooldowns.medium_term.seconds
+    )
+    @app_commands.checks.cooldown(
+        config.cooldowns.long_term.count, config.cooldowns.long_term.seconds
+    )
     async def shorten(
         self,
         interaction: discord.Interaction,
@@ -70,7 +79,7 @@ class shortenUrl(commands.Cog):
         alias: str = None,
         max_clicks: int = None,
         password: str = None,
-    ):
+    ) -> None:
         await interaction.response.defer()
 
         result = shortener.shorten(
@@ -79,8 +88,8 @@ class shortenUrl(commands.Cog):
 
         embed = discord.Embed(
             title="URL Shortened Successfully!",
-            description="You can also view the statistics page of the shortened url by clicking the button below or you can also use the command </stats:1202895069628203048> to view the statistics.",
-            color=discord.Color.blurple(),
+            description=f"You can also view the statistics page of the shortened url by clicking the button below or you can also use the command </stats:{config.commands['stats'].id}> to view the statistics.",
+            color=int(config.ui.colors.primary, 16),
             timestamp=interaction.created_at,
         )
 
@@ -103,20 +112,28 @@ class shortenUrl(commands.Cog):
             )
 
         short_code = result.split("/")[-1]
-
         await interaction.followup.send(embed=embed, view=self.buttonView(short_code))
 
-    @app_commands.command(name="emojify", description="Convert Long Urls to Emojis 😉")
+    @app_commands.command(
+        name="emojify",
+        description=f"{config.commands['emojify'].description} {config.commands['emojify'].emoji}",
+    )
     @app_commands.describe(
-        url="The URL to emojify",
-        emojies="Custom Emoji Sequence you want your short url to be",
-        max_clicks="The maximum number of clicks for the URL",
-        password="The password for the URL",
+        **{
+            param.name: f"{param.description}"
+            for param in config.commands["emojify"].parameters
+        }
     )
     @app_commands.guild_only()
-    @app_commands.checks.cooldown(1, 10.0)
-    @app_commands.checks.cooldown(5, 60.0)
-    @app_commands.checks.cooldown(200, 24 * 60 * 60.0)
+    @app_commands.checks.cooldown(
+        config.cooldowns.short_term.count, config.cooldowns.short_term.seconds
+    )
+    @app_commands.checks.cooldown(
+        config.cooldowns.medium_term.count, config.cooldowns.medium_term.seconds
+    )
+    @app_commands.checks.cooldown(
+        config.cooldowns.long_term.count, config.cooldowns.long_term.seconds
+    )
     async def emojify(
         self,
         interaction,
@@ -124,7 +141,7 @@ class shortenUrl(commands.Cog):
         emojies: str = None,
         max_clicks: int = None,
         password: str = None,
-    ):
+    ) -> None:
         await interaction.response.defer()
 
         result = shortener.emojify(
@@ -133,8 +150,8 @@ class shortenUrl(commands.Cog):
 
         embed = discord.Embed(
             title="URL Shortened Successfully!",
-            description="You can also view the statistics page of the shortened url by clicking the button below or you can also use the command </stats:1202895069628203048> to view the statistics.",
-            color=discord.Color.blurple(),
+            description=f"You can also view the statistics page of the shortened url by clicking the button below or you can also use the command </stats:{config.commands['stats'].id}> to view the statistics.",
+            color=int(config.ui.colors.primary, 16),
             timestamp=interaction.created_at,
         )
 
@@ -156,16 +173,23 @@ class shortenUrl(commands.Cog):
                 icon_url=interaction.user.default_avatar,
             )
 
-        short_code = result.split("/")[-1]
-
+        short_code: str = result.split("/")[-1]
         await interaction.followup.send(embed=embed, view=self.buttonView(short_code))
 
     @shorten.error
     async def shorten_error(
         self, interaction: discord.Interaction, error: app_commands.AppCommandError
-    ):
+    ) -> None:
         if isinstance(error, app_commands.CommandOnCooldown):
-            embed = await generate_error_message(interaction, error)
+            embed = await generate_error_message(
+                interaction,
+                error,
+                cooldown_configuration=[
+                    f"- ```{config.cooldowns.short_term.count} time every {config.cooldowns.short_term.seconds} seconds```",
+                    f"- ```{config.cooldowns.medium_term.count} time every {config.cooldowns.medium_term.seconds} seconds```",
+                    f"- ```{config.cooldowns.long_term.count} time every {config.cooldowns.long_term.seconds} seconds```",
+                ],
+            )
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             embed = await generate_command_error_embed(interaction, error, "shorten")
@@ -174,15 +198,23 @@ class shortenUrl(commands.Cog):
     @emojify.error
     async def emoji_error(
         self, interaction: discord.Interaction, error: app_commands.AppCommandError
-    ):
+    ) -> None:
         if isinstance(error, app_commands.CommandOnCooldown):
-            embed = await generate_error_message(interaction, error)
+            embed = await generate_error_message(
+                interaction,
+                error,
+                cooldown_configuration=[
+                    f"- ```{config.cooldowns.short_term.count} time every {config.cooldowns.short_term.seconds} seconds```",
+                    f"- ```{config.cooldowns.medium_term.count} time every {config.cooldowns.medium_term.seconds} seconds```",
+                    f"- ```{config.cooldowns.long_term.count} time every {config.cooldowns.long_term.seconds} seconds```",
+                ],
+            )
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             embed = await generate_command_error_embed(interaction, error, "emojify")
             await interaction.followup.send(embed=embed, ephemeral=True)
 
 
-async def setup(bot):
+async def setup(bot) -> None:
     await bot.add_cog(shortenUrl(bot))
-    print("Loaded shortenUrl")
+    print(f"Loaded {shortenUrl.__name__}")

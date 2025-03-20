@@ -7,15 +7,17 @@ from utils_code import (
     validate_password,
     generate_code_snippet,
 )
+from config import config
+from utils import generate_command_error_embed
 
 
 class genCode(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
 
     @app_commands.command(
         name="get-code",
-        description="Get the code to use the https://spoo.me API in your preferred language to shorten a URL 🔗",
+        description=f"{config.commands['get_code'].description} {config.commands['get_code'].emoji}",
     )
     @app_commands.guild_only()
     @app_commands.choices(
@@ -44,11 +46,10 @@ class genCode(commands.Cog):
         ],
     )
     @app_commands.describe(
-        language="The language of the code",
-        url="The URL to shorten",
-        alias="The custom alias for the URL",
-        max_clicks="The maximum number of clicks for the URL",
-        password="The password for the URL",
+        **{
+            param.name: f"{param.description}"
+            for param in config.commands["get_code"].parameters
+        }
     )
     async def get_code(
         self,
@@ -58,7 +59,7 @@ class genCode(commands.Cog):
         alias: str = None,
         max_clicks: int = None,
         password: str = None,
-    ):
+    ) -> None:
         await interaction.response.defer()
 
         code, lang = generate_code_snippet(
@@ -69,7 +70,7 @@ class genCode(commands.Cog):
             password=password,
         )
 
-        soft_errors = []
+        soft_errors: list[str] = []
 
         if not validate_url(url):
             url = url[:150] + "..." if len(url) > 150 else url
@@ -94,8 +95,8 @@ class genCode(commands.Cog):
 
         if len(code) <= 4096:
             embed = discord.Embed(
-                title=f"{language.value} code to Use spoo.me's API",
-                color=discord.Color.blurple(),
+                title=f"{language.value} code to Use {config.urls.api_base}'s API",
+                color=int(config.ui.colors.primary, 16),
                 description=f"```{lang}\n\n{code}\n\n```",
                 timestamp=interaction.created_at,
             )
@@ -119,9 +120,7 @@ class genCode(commands.Cog):
             await interaction.followup.send(embed=embed)
 
         else:
-            message = (
-                f"## {language.value} Code to use spoo.me's API \n```{lang}\n{code}```"
-            )
+            message: str = f"## {language.value} Code to use {config.urls.api_base}'s API \n```{lang}\n{code}```"
 
             if len(soft_errors) > 0:
                 message += "\n\nSoft Warnings ⚠️\n" + "\n".join(soft_errors)
@@ -129,18 +128,18 @@ class genCode(commands.Cog):
             await interaction.followup.send(message)
 
     @get_code.error
-    async def get_code_error(self, interaction, error):
+    async def get_code_error(
+        self, interaction: discord.Interaction, error: app_commands.AppCommandError
+    ) -> None:
         if isinstance(error, app_commands.errors.CommandError):
-            embed = discord.Embed(
-                title="An error occurred",
-                description=f"```{error}```",
-                color=discord.Color.red(),
+            embed = await generate_command_error_embed(
+                interaction=interaction, error=error, command_name="get-code"
             )
-            await interaction.response.send_message(embed=embed)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             raise error
 
 
-async def setup(bot):
+async def setup(bot) -> None:
     await bot.add_cog(genCode(bot))
-    print("genCode is loaded")
+    print(f"Loaded {genCode.__name__}")
