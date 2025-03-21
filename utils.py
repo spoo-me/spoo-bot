@@ -9,7 +9,8 @@ import discord
 import random
 import datetime
 import aiohttp
-from config import ChartHeatmap, config
+from schemas import ChartHeatmap
+from config import config
 
 shortener = Shortener()
 

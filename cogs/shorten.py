@@ -2,7 +2,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from utils import shortener, generate_error_message, generate_command_error_embed
-from config import BotEmojis, SocialShareUrls, config
+from schemas import BotEmojis, SocialShareUrls
+from config import config
 
 
 class shortenUrl(commands.Cog):

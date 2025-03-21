@@ -10,7 +10,8 @@ from utils import (
     generate_command_error_embed,
     generate_countries_heatmap,
 )
-from config import ChartColors, config
+from schemas import ChartColors
+from config import config
 
 
 class StatsSelectView(discord.ui.View):
