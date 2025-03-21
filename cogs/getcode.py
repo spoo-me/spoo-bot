@@ -78,12 +78,12 @@ class genCode(commands.Cog):
                 f"- ```'{url}' is not a valid URL, the API might return an error```"
             )
         if alias is not None and not validate_string(alias):
-            alias = alias[:150] + "..." if len(alias) > 150 else alias
+            alias = alias[:15] + "..." if len(alias) > 15 else alias
             soft_errors.append(
                 f"- ```'{alias}' is not a valid alias, the API might return an error```"
             )
         if alias is not None and len(alias) > 15:
-            alias = alias[:150] + "..." if len(alias) > 150 else alias
+            alias = alias[:15] + "..." if len(alias) > 15 else alias
             soft_errors.append(
                 f"- ```'{alias}' is too long, the API will strip it to 15 characters```"
             )
