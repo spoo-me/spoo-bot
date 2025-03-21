@@ -24,8 +24,7 @@ class SocialShareUrls(BaseConfigModel):
         https_validator(v)
 
         # Then validate ending with '='
-        url_str = str(v)
-        if not url_str.endswith("="):
+        if not v.endswith("="):
             raise ValueError(
                 'Social share URLs must end with "=" for parameter appending'
             )

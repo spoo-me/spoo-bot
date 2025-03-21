@@ -96,7 +96,7 @@ def process_dict(d: dict) -> dict:
             try:
                 result[k] = replace_env_vars(v)
             except EnvironmentVariableError as e:
-                raise EnvironmentVariableError(f"Error in '{k}': {str(e)}")
+                raise EnvironmentVariableError(f"Error in '{k}': {str(e)}") from e
     return result
 
 
@@ -132,13 +132,13 @@ def load_config() -> Config:
         with open(config_path, "rb") as f:
             toml_dict = tomli.load(f)
     except tomli.TOMLDecodeError as e:
-        raise ConfigError(f"Error parsing config.toml: {str(e)}")
+        raise ConfigError(f"Error parsing config.toml: {str(e)}") from e
 
     try:
         # Process environment variables
         processed_dict = process_dict(toml_dict)
     except EnvironmentVariableError as e:
-        raise EnvironmentVariableError(f"Environment variable error: {str(e)}")
+        raise EnvironmentVariableError(f"Environment variable error: {str(e)}") from e
 
     try:
         # Create and validate config object
@@ -152,7 +152,7 @@ def load_config() -> Config:
 
         raise ConfigValidationError(
             "Configuration validation failed:\n" + "\n".join(errors)
-        )
+        ) from e
 
 
 # Create a global config instance with error handling
@@ -160,7 +160,7 @@ try:
     config: Config = load_config()
 except ConfigError as e:
     print(f"Configuration Error: {str(e)}")
-    raise SystemExit(1)
+    raise SystemExit(1) from e
 
 
 # Export only what's needed

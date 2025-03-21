@@ -218,12 +218,15 @@ def generate_countries_heatmap(
 async def generate_error_message(
     interaction: discord.Interaction,
     error,
-    cooldown_configuration=[
-        "- ```1 time every 10 seconds```",
-        "- ```5 times every 60 seconds```",
-        "- ```200 times every 24 hours```",
-    ],
+    cooldown_configuration: list[str] | None = None,
 ) -> discord.Embed:
+    if cooldown_configuration is None:
+        cooldown_configuration: list[str] = [
+            "- ```1 time every 10 seconds```",
+            "- ```5 times every 60 seconds```",
+            "- ```200 times every 24 hours```",
+        ]
+
     end_time: datetime.datetime = datetime.datetime.now() + datetime.timedelta(
         seconds=error.retry_after
     )

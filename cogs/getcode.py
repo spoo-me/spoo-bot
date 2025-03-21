@@ -101,7 +101,7 @@ class genCode(commands.Cog):
                 timestamp=interaction.created_at,
             )
 
-            if len(soft_errors) > 0:
+            if soft_errors:
                 embed.add_field(
                     name="Soft Warnings", value="\n".join(soft_errors), inline=False
                 )
@@ -122,7 +122,7 @@ class genCode(commands.Cog):
         else:
             message: str = f"## {language.value} Code to use {config.urls.api_base}'s API \n```{lang}\n{code}```"
 
-            if len(soft_errors) > 0:
+            if soft_errors:
                 message += "\n\nSoft Warnings ⚠️\n" + "\n".join(soft_errors)
 
             await interaction.followup.send(message)
@@ -131,13 +131,13 @@ class genCode(commands.Cog):
     async def get_code_error(
         self, interaction: discord.Interaction, error: app_commands.AppCommandError
     ) -> None:
-        if isinstance(error, app_commands.errors.CommandError):
-            embed = await generate_command_error_embed(
-                interaction=interaction, error=error, command_name="get-code"
-            )
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-        else:
+        if not isinstance(error, app_commands.errors.CommandError):
             raise error
+
+        embed = await generate_command_error_embed(
+            interaction=interaction, error=error, command_name="get-code"
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 async def setup(bot) -> None:

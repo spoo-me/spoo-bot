@@ -460,10 +460,12 @@ class urlStats(commands.Cog):
         name="stats",
         description=f"{config.commands['stats'].description} {config.commands['stats'].emoji}",
     )
-    @app_commands.describe(**{
-        param.name: f"{param.description}"
-        for param in config.commands["stats"].parameters
-    })
+    @app_commands.describe(
+        **{
+            param.name: f"{param.description}"
+            for param in config.commands["stats"].parameters
+        }
+    )
     @app_commands.guild_only()
     @app_commands.checks.cooldown(
         config.cooldowns.short_term.count, config.cooldowns.short_term.seconds
