@@ -156,7 +156,7 @@ timeline = [
 [ui.charts.style]
 background = "rgb(32, 34, 37)"
 grid_color = "rgb(46, 48, 53)"
-text_color = "#fff"
+text_color = "rgb(255, 255, 255)"
 font_style = "bold"
 font_size = 20
 border_width = 2
@@ -166,16 +166,16 @@ padding = { left = 20, right = 20, top = 5, bottom = 20 }
 
 [ui.charts.scales]
 grid_color = "rgb(46, 48, 53)"
-tick_color = "#fff"
+tick_color = "rgb(255, 255, 255)"
 
 [ui.charts.plugins]
 [ui.charts.plugins.title]
-color = "#fff"
+color = "rgb(255, 255, 255)"
 font_style = "bold"
 font_size = 20
 
 [ui.charts.plugins.legend]
-labels_color = "#fff"
+labels_color = "rgb(255, 255, 255)"
 
 [ui.charts.heatmap]
 dpi = 300
@@ -186,13 +186,6 @@ bbox_inches = "tight"
 [ui.messages]
 welcome = "Hey {mention}! Welcome to the support server for spoo.me, the best URL shortener out there! We hope you enjoy your stay here!"
 bot_mention = "Hello, I am the SpooBot. I am a URL shortener bot that makes your URLs spoo-tacular! 😎\nType </help:{help_cmd_id}> to see the list of commands I can do for you!"
-
-# General cooldown settings
-# These settings apply to all commands unless overridden in the command-specific section
-[commands.cooldowns]
-short_term = { count = 1, seconds = 10 }
-medium_term = { count = 5, seconds = 60 }
-long_term = { count = 200, seconds = 86400 } # 24 hours
 
 # Asset URLs
 [assets]

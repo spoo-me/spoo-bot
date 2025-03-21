@@ -154,7 +154,7 @@ timeline = [
 [ui.charts.style]
 background = "rgb(32, 34, 37)"
 grid_color = "rgb(46, 48, 53)"
-text_color = "#fff"
+text_color = "rgb(255, 255, 255)"
 font_style = "bold"
 font_size = 20
 border_width = 2
@@ -164,16 +164,16 @@ padding = { left = 20, right = 20, top = 5, bottom = 20 }
 
 [ui.charts.scales]
 grid_color = "rgb(46, 48, 53)"
-tick_color = "#fff"
+tick_color = "rgb(255, 255, 255)"
 
 [ui.charts.plugins]
 [ui.charts.plugins.title]
-color = "#fff"
+color = "rgb(255, 255, 255)"
 font_style = "bold"
 font_size = 20
 
 [ui.charts.plugins.legend]
-labels_color = "#fff"
+labels_color = "rgb(255, 255, 255)"
 
 [ui.charts.heatmap]
 dpi = 300
