@@ -35,12 +35,16 @@ class spooBot(commands.Bot):
         await self.wait_until_ready()
         if not self.synced:
             await self.tree.sync()
-            await bot.change_presence(
-                activity=discord.CustomActivity(
-                    name="Custom Status",
-                    state=config.bot.custom_status,
+            try:
+                await bot.change_presence(
+                    activity=discord.CustomActivity(
+                        name="Custom Status",
+                        state=config.bot.custom_status,
+                    )
                 )
-            )
+                print("Status set to custom status")
+            except Exception as e:
+                print(f"Error setting custom status: {e}", file=sys.stdout)
             self.synced = True
 
             # Start the stats update task
