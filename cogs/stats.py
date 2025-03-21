@@ -68,7 +68,7 @@ class StatsSelectView(discord.ui.View):
     )
     async def analysis_chart_callback(
         self, interaction: discord.Interaction, select: discord.ui.Select
-    ):
+    ) -> None:
         if select.values[0] in self.used_charts_options:
             await interaction.response.send_message(
                 embed=discord.Embed(
@@ -82,6 +82,27 @@ class StatsSelectView(discord.ui.View):
 
         await interaction.response.defer()
 
+        # Create a common embed for all charts
+        embed = discord.Embed(
+            title="",
+            description="",
+            timestamp=interaction.created_at,
+            url=f"{self.base_url}/stats/{self.stats.short_code}",
+            color=int(config.ui.colors.primary, 16),
+        )
+        file: discord.File = None
+
+        try:
+            embed.set_footer(
+                text=f"Requested by {interaction.user.name}",
+                icon_url=interaction.user.avatar,
+            )
+        except Exception:
+            embed.set_footer(
+                text=f"Requested by {interaction.user.name}",
+                icon_url=interaction.user.default_avatar,
+            )
+
         if select.values[0] == "Platform Analysis 📱":
             resp = generate_chart(
                 data=[
@@ -94,12 +115,9 @@ class StatsSelectView(discord.ui.View):
                 type="bar",
             )
 
-            embed = discord.Embed(
-                title="Platforms Analysis Chart 📱",
-                color=int(config.ui.colors.primary, 16),
-                timestamp=interaction.created_at,
-                url=f"{self.base_url}/stats/{self.stats.short_code}",
-                description="This chart shows the trend of platforms used to access the URL",
+            embed.title = "Platforms Analysis Chart 📱"
+            embed.description = (
+                "This chart shows the trend of platforms used to access the URL"
             )
 
             embed.set_image(url=resp["url"])
@@ -132,13 +150,12 @@ class StatsSelectView(discord.ui.View):
                 title="Browsers Analysis Chart",
                 type="bar",
             )
-            embed = discord.Embed(
-                title="Browsers Analysis Chart 🌐",
-                color=int(config.ui.colors.primary, 16),
-                timestamp=interaction.created_at,
-                url=f"{self.base_url}/stats/{self.stats.short_code}",
-                description="This chart shows the trend of browsers used to access the URL",
+
+            embed.title = "Browsers Analysis Chart 🌐"
+            embed.description = (
+                "This chart shows the trend of browsers used to access the URL"
             )
+
             embed.set_image(url=resp["url"])
             embed.add_field(
                 name="Short Code", value=f"```{self.stats.short_code}```", inline=False
@@ -169,13 +186,12 @@ class StatsSelectView(discord.ui.View):
                 title="Referrers Analysis Chart",
                 type="bar",
             )
-            embed = discord.Embed(
-                title="Referrers Analysis Chart 🔗",
-                color=int(config.ui.colors.primary, 16),
-                timestamp=interaction.created_at,
-                url=f"{self.base_url}/stats/{self.stats.short_code}",
-                description="This chart shows the trend of referrers used to access the URL",
+
+            embed.title = "Referrers Analysis Chart 🔗"
+            embed.description = (
+                "This chart shows the trend of referrers used to access the URL"
             )
+
             embed.set_image(url=resp["url"])
             embed.add_field(
                 name="Short Code", value=f"```{self.stats.short_code}```", inline=False
@@ -206,13 +222,12 @@ class StatsSelectView(discord.ui.View):
                 title="Clicks Over Time Chart",
                 type="line",
             )
-            embed = discord.Embed(
-                title="Clicks Over Time Chart 📈",
-                color=int(config.ui.colors.primary, 16),
-                timestamp=interaction.created_at,
-                url=f"{self.base_url}/stats/{self.stats.short_code}",
-                description="This chart shows the trend of clicks over the last 30 days",
+
+            embed.title = "Clicks Over Time Chart 📈"
+            embed.description = (
+                "This chart shows the trend of clicks over the last 30 days"
             )
+
             embed.set_image(url=resp["url"])
             embed.add_field(
                 name="Short Code", value=f"```{self.stats.short_code}```", inline=False
@@ -245,13 +260,11 @@ class StatsSelectView(discord.ui.View):
                 dpi=heatmap_config.dpi,
             )
 
-            embed = discord.Embed(
-                title="Countries Heatmap 🔥",
-                color=int(config.ui.colors.primary, 16),
-                timestamp=interaction.created_at,
-                url=f"{self.base_url}/stats/{self.stats.short_code}",
-                description="This heatmap shows the countries from where the URL was accessed",
+            embed.title = "Countries Heatmap 🔥"
+            embed.description = (
+                "This heatmap shows the countries from where the URL was accessed"
             )
+
             embed.set_image(url="attachment://heatmap.png")
             embed.add_field(
                 name="Short Code", value=f"```{self.stats.short_code}```", inline=False
@@ -265,27 +278,7 @@ class StatsSelectView(discord.ui.View):
                 inline=False,
             )
 
-            try:
-                embed.set_footer(
-                    text=f"Requested by {interaction.user.name}",
-                    icon_url=interaction.user.avatar,
-                )
-            except Exception:
-                embed.set_footer(
-                    text=f"Requested by {interaction.user.name}",
-                    icon_url=interaction.user.default_avatar,
-                )
-
-            await interaction.followup.send(
-                embed=embed, file=discord.File("heatmap.png")
-            )
-
-            self.used_charts_options.append(select.values[0])
-            if len(self.used_charts_options) == 6:
-                select.disabled = True
-                await interaction.message.edit(view=self)
-                self.used_charts_options = []
-            return
+            file = discord.File("heatmap.png", filename="heatmap.png")
 
         elif select.values[0] == "Unique Countries Heatmap 🌍":
             heatmap_config = config.ui.charts.heatmap
@@ -302,13 +295,9 @@ class StatsSelectView(discord.ui.View):
                 dpi=heatmap_config.dpi,
             )
 
-            embed = discord.Embed(
-                title="Unique Countries Heatmap 🌍",
-                color=int(config.ui.colors.primary, 16),
-                timestamp=interaction.created_at,
-                url=f"{self.base_url}/stats/{self.stats.short_code}",
-                description="This heatmap shows the unique clicks countries where the URL was accessed",
-            )
+            embed.title = "Unique Countries Heatmap 🌍"
+            embed.description = "This heatmap shows the unique clicks countries where the URL was accessed"
+
             embed.set_image(url="attachment://unique_heatmap.png")
             embed.add_field(
                 name="Short Code", value=f"```{self.stats.short_code}```", inline=False
@@ -322,40 +311,12 @@ class StatsSelectView(discord.ui.View):
                 inline=False,
             )
 
-            try:
-                embed.set_footer(
-                    text=f"Requested by {interaction.user.name}",
-                    icon_url=interaction.user.avatar,
-                )
-            except Exception:
-                embed.set_footer(
-                    text=f"Requested by {interaction.user.name}",
-                    icon_url=interaction.user.default_avatar,
-                )
+            file = discord.File("unique_heatmap.png", filename="unique_heatmap.png")
 
-            await interaction.followup.send(
-                embed=embed, file=discord.File("unique_heatmap.png")
-            )
-
-            self.used_charts_options.append(select.values[0])
-            if len(self.used_charts_options) == 6:
-                select.disabled = True
-                await interaction.message.edit(view=self)
-                self.used_charts_options = []
-            return
-
-        try:
-            embed.set_footer(
-                text=f"Requested by {interaction.user.name}",
-                icon_url=interaction.user.avatar,
-            )
-        except Exception:
-            embed.set_footer(
-                text=f"Requested by {interaction.user.name}",
-                icon_url=interaction.user.default_avatar,
-            )
-
-        await interaction.followup.send(embed=embed)
+        if file is not None:
+            await interaction.followup.send(embed=embed, file=file)
+        else:
+            await interaction.followup.send(embed=embed)
 
         self.used_charts_options.append(select.values[0])
         if len(self.used_charts_options) == 6:
@@ -499,12 +460,10 @@ class urlStats(commands.Cog):
         name="stats",
         description=f"{config.commands['stats'].description} {config.commands['stats'].emoji}",
     )
-    @app_commands.describe(
-        **{
-            param.name: f"{param.description}"
-            for param in config.commands["stats"].parameters
-        }
-    )
+    @app_commands.describe(**{
+        param.name: f"{param.description}"
+        for param in config.commands["stats"].parameters
+    })
     @app_commands.guild_only()
     @app_commands.checks.cooldown(
         config.cooldowns.short_term.count, config.cooldowns.short_term.seconds
