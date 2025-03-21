@@ -95,15 +95,14 @@ async def on_message(message) -> None:
     if message.author == bot.user:
         return
 
-    if bot.user in message.mentions:
-        if message.type is not discord.MessageType.reply:
-            embed = discord.Embed(
-                description=config.ui.messages.bot_mention.format(
-                    help_cmd_id=config.commands["help"].id
-                ),
-                color=int(config.ui.colors.primary, 16),
-            )
-            await message.reply(embed=embed)
+    if bot.user in message.mentions and message.type is not discord.MessageType.reply:
+        embed = discord.Embed(
+            description=config.ui.messages.bot_mention.format(
+                help_cmd_id=config.commands["help"].id
+            ),
+            color=int(config.ui.colors.primary, 16),
+        )
+        await message.reply(embed=embed)
 
     await bot.process_commands(message)
 
