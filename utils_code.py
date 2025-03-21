@@ -3,7 +3,7 @@ from typing import Literal
 import re
 import validators
 
-available_languages = [
+available_languages: list[str] = [
     "Python-Requests",
     "Python-Aiohttp",
     "C",
@@ -53,7 +53,6 @@ def generate_code_snippet(
     password: str = None,
     max_clicks: int = None,
 ):
-
     if language == "Python-Requests":
         payload = {
             "url": long_url,
@@ -255,7 +254,7 @@ func main() {{
     longUrl := "{long_url}"
     encodedLongUrl := url.QueryEscape(longUrl)
 
-    payload := strings.NewReader("url="+encodedLongUrl{f'+"{form_params}"' if form_params!="" else ''})
+    payload := strings.NewReader("url="+encodedLongUrl{f'+"{form_params}"' if form_params != "" else ""})
 
     req, err := http.NewRequest("POST", apiUrl, payload)
     if err != nil {{
@@ -308,7 +307,7 @@ Content-Length: {len(form_params)}
         )
 
     elif language == "Java":
-        form_params = f""
+        form_params = ""
 
         if alias is not None:
             form_params += f"&alias={alias}"
@@ -338,7 +337,7 @@ public class HttpRequestExample {{
         String encodedLongUrl = URLEncoder.encode(longUrl, StandardCharsets.UTF_8);
 
         // Build the request body
-        String requestBody = "url="+encodedLongUrl{f'+"{form_params}"' if form_params!="" else ''};
+        String requestBody = "url="+encodedLongUrl{f'+"{form_params}"' if form_params != "" else ""};
 
         // Create and configure the HttpClient
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -443,7 +442,7 @@ xhr.send(data);""",
         )
 
     elif language == "Kotlin":
-        form_params = f""
+        form_params = ""
 
         if alias is not None:
             form_params += f"&alias={alias}"
@@ -467,7 +466,7 @@ fun main() {{
 
     val encodedUrl = HttpUrl.parse(originalUrl)?.encodedPath
 
-    val body = "url=$encodedUrl{form_params if form_params!="" else ""}".toRequestBody(mediaType)
+    val body = "url=$encodedUrl{form_params if form_params != "" else ""}".toRequestBody(mediaType)
 
     val request = Request.Builder()
         .url("https://spoo.me/")
@@ -639,7 +638,7 @@ if ($err) {{
         )
 
     elif language == "R":
-        form_params = f""
+        form_params = ""
 
         if alias is not None:
             form_params += f"&alias={alias}"
@@ -659,7 +658,7 @@ long_url <- "{long_url}"
 # encode the long url
 encoded_long_url <- URLencode(long_url)
 
-payload <- paste("url=", encoded_long_url{f', "{form_params}"' if form_params!="" else ''}, sep="")
+payload <- paste("url=", encoded_long_url{f', "{form_params}"' if form_params != "" else ""}, sep="")
 
 encode <- "form"
 
@@ -678,7 +677,7 @@ tryCatch({{
         )
 
     elif language == "Ruby":
-        form_params = f""
+        form_params = ""
 
         if alias is not None:
             form_params += f"&alias={alias}"
@@ -702,7 +701,7 @@ encodedLongUrl = URI.encode_www_form_component(longUrl)
 request = Net::HTTP::Post.new(url)
 request["content-type"] = 'application/x-www-form-urlencoded'
 request["Accept"] = 'application/json'
-request.body = "url=#{'{encodedLongUrl}'}{form_params}"
+request.body = "url=#{"{encodedLongUrl}"}{form_params}"
 
 response = http.request(request)
 puts response.read_body""",
@@ -710,7 +709,7 @@ puts response.read_body""",
         )
 
     elif language == "Shell":
-        form_params = f""
+        form_params = ""
 
         if alias is not None:
             form_params += f"&alias={alias}"
@@ -793,7 +792,10 @@ def validate_password(password):
 
 
 def validate_url(url):
-    return validators.url(url, skip_ipv4_addr=True, skip_ipv6_addr=True) and not "spoo.me" in url
+    return (
+        validators.url(url, skip_ipv4_addr=True, skip_ipv6_addr=True)
+        and "spoo.me" not in url
+    )
 
 
 def validate_string(string):

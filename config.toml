@@ -1,0 +1,228 @@
+# Bot Configuration
+[bot]
+command_prefix = "$"
+name = "SpooBot"
+description = "URL shortener bot that makes your URLs spoo-tacular!"
+avatar_url = "https://cdn.discordapp.com/avatars/1202738385194717205/a_b569cff9b32a186769c33e965f7c62b2.gif?size=4096"
+bot_id = "1202738385194717205"
+bot_token = "${BOT_TOKEN}"                                                                                             # Environment variable for security
+custom_status = "Shorten your URLs, not your possibilities."
+super_user_id = "1202738385194717205"
+
+[bot.emojis]
+twitter = "1203389152712724581"
+facebook = "1203389150028369970"
+telegram = "1203389144756391966"
+whatsapp = "1203389130428518460"
+reddit = "1203389126100131910"
+snapchat = "1203389123784609812"
+git = "1203429172903542835"
+spoo = "1203429402071797760"
+
+# Bot Commands
+[commands]
+[commands.shorten]
+id = "1202754338272051252"
+emoji = "🤏🏻"
+description = "Shorten a Long URL"
+parameters = [
+    { name = "url", description = "The url you want to shorten", emoji = "🌐" },
+    { name = "alias", description = "The custom alias you want to use for the url", emoji = "🆔" },
+    { name = "password", description = "The password you want to use for the url", emoji = "🔑" },
+    { name = "max_clicks", description = "The maximum number of clicks you want to allow for the url", emoji = "🖱️" },
+]
+
+[commands.emojify]
+id = "1202760315247403109"
+emoji = "😉"
+description = "Convert Long URLs to Emojis"
+parameters = [
+    { name = "url", description = "The url you want to shorten", emoji = "🌐" },
+    { name = "emojies", description = "The custom emojies you want to use for the url", emoji = "😎" },
+    { name = "password", description = "The password you want to use for the url", emoji = "🔑" },
+    { name = "max_clicks", description = "The maximum number of clicks you want to allow for the url", emoji = "🖱️" },
+]
+
+[commands.stats]
+id = "1202895069628203048"
+emoji = "📊"
+description = "View Shortened URL Statistics"
+parameters = [
+    { name = "short_code", description = "The short code of the url you want to get the stats for", emoji = "🔢" },
+    { name = "password", description = "The password of the url, if the url was password-protected", emoji = "🔑" },
+]
+
+[commands.get_code]
+id = "1203775482903134219"
+emoji = "🧑🏻‍💻"
+description = "Get the code to use the spoo.me API in your preferred language to shorten a URL"
+parameters = [
+    { name = "language", description = "The language you want to get the code for", emoji = "💻" },
+    { name = "url", description = "The url you want to shorten", emoji = "🌐" },
+    { name = "alias", description = "The custom alias you want to use for the url", emoji = "🆔" },
+    { name = "password", description = "The password you want to use for the url", emoji = "🔑" },
+    { name = "max_clicks", description = "The maximum number of clicks you want to allow for the url", emoji = "🖱️" },
+]
+
+[commands.bot_stats]
+id = "1203422993275949056"
+emoji = "🤖"
+description = "Get a detailed information about the bot and the developer"
+
+[commands.about]
+id = "1203426619721785384"
+emoji = "ℹ️"
+description = "Get a detailed information about the bot and the developer"
+
+[commands.support]
+id = "1203424044418994268"
+emoji = "📞"
+description = "Get the support server invite link"
+
+[commands.invite]
+id = "1203421046850584706"
+emoji = "💌"
+description = "Get the bot's invite link to add it to your own server"
+
+[commands.help]
+id = "1202746904203759646"
+emoji = "❔"
+description = "👀 See this message again"
+
+# Command Cooldown Settings
+# These settings apply to all commands unless overridden
+[cooldowns]
+short_term = { count = 1, seconds = 10 }
+medium_term = { count = 5, seconds = 60 }
+long_term = { count = 200, seconds = 86400 } # 24 hours
+
+# Discord Configuration
+[discord]
+[discord.ids]
+parent_server = "1192388005206433892"
+
+[discord.ids.channels]
+welcome = "1192388005206433894"
+stats_clicks = "1351907108190162944"
+stats_shortlinks = "1351907592380612608"
+
+# URL Configuration
+[urls]
+api_base = "https://spoo.me"
+spoo_metrics = "https://spoo.me/metric"
+qr_api_base = "https://qr.spoo.me"
+charts_api_base = "https://quickchart.io/chart/create"
+discord_invite = "https://spoo.me/discord"
+bot_invite = "https://discord.com/api/oauth2/authorize?client_id=1202738385194717205&permissions=9242837113920&scope=bot"
+github = "https://github.com/spoo-me/spoo-bot"
+
+[urls.social_share]
+twitter = "https://twitter.com/intent/tweet?url="
+facebook = "https://www.facebook.com/sharer/sharer.php?u="
+telegram = "https://t.me/share/url?url="
+whatsapp = "https://wa.me/?text="
+reddit = "https://www.reddit.com/submit?url="
+snapchat = "https://www.snapchat.com/scan?attachmentUrl="
+
+# UI Configuration
+[ui.colors]
+primary = "0x7289da" # blurple
+success = "0x2ecc71" # green
+error = "0xe74c3c"   # red
+warning = "0xf1c40f" # gold / yellow
+info = "0x7289DA"    # OgGreyple
+
+[ui.charts]
+[ui.charts.colors]
+platform = [
+    ["rgba(0, 0, 255, 0.15)", "rgb(0, 0, 255)"],   # Clicks
+    ["rgba(255, 69, 0, 0.15)", "rgb(255, 69, 0)"], # Unique clicks
+]
+browser = [
+    ["rgba(153, 102, 255, 0.15)", "rgb(153, 102, 255)"], # Clicks
+    ["rgba(255, 159, 64, 0.15)", "rgb(255, 159, 64)"],   # Unique clicks
+]
+referrer = [
+    ["rgba(255, 105, 180, 0.15)", "rgb(255, 105, 180)"], # Clicks
+    ["rgba(60, 179, 113, 0.15)", "rgb(60, 179, 113)"],   # Unique clicks
+]
+timeline = [
+    ["rgba(75, 192, 192, 0.15)", "rgb(75, 192, 192)"], # Clicks
+    ["rgba(85, 52, 235, .25)", "rgb(85, 52, 235)"],    # Unique clicks
+]
+
+[ui.charts.style]
+background = "rgb(32, 34, 37)"
+grid_color = "rgb(46, 48, 53)"
+text_color = "rgb(255, 255, 255)"
+font_style = "bold"
+font_size = 20
+border_width = 2
+border_radius = 10
+line_tension = 0.5
+padding = { left = 20, right = 20, top = 5, bottom = 20 }
+
+[ui.charts.scales]
+grid_color = "rgb(46, 48, 53)"
+tick_color = "rgb(255, 255, 255)"
+
+[ui.charts.plugins]
+[ui.charts.plugins.title]
+color = "rgb(255, 255, 255)"
+font_style = "bold"
+font_size = 20
+
+[ui.charts.plugins.legend]
+labels_color = "rgb(255, 255, 255)"
+
+[ui.charts.heatmap]
+dpi = 300
+alpha = 1
+pad_inches = 0.5
+bbox_inches = "tight"
+
+[ui.messages]
+welcome = "Hey {mention}! Welcome to the support server for spoo.me, the best URL shortener out there! We hope you enjoy your stay here!"
+bot_mention = "Hello, I am the SpooBot. I am a URL shortener bot that makes your URLs spoo-tacular! 😎\nType </help:{help_cmd_id}> to see the list of commands I can do for you!"
+
+# Asset URLs
+[assets]
+ping_uri = "https://uploads.poxipage.com/7q5iw7dwl5jc3zdjaergjhpat27tws8bkr9fgy45_938843265627717703-webp"
+waiting_gifs = [
+    "https://media3.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif?cid=ecf05e475p246q1gdcu96b5mkqlqvuapb7xay2hywmki7f5q&ep=v1_gifs_search&rid=giphy.gif&ct=g",
+    "https://media2.giphy.com/media/QBd2kLB5qDmysEXre9/giphy.gif?cid=ecf05e47ha6xwa7rq38dcst49nefabwwrods631hvz67ptfg&ep=v1_gifs_search&rid=giphy.gif&ct=g",
+    "https://media2.giphy.com/media/ZgqJGwh2tLj5C/giphy.gif?cid=ecf05e47gflyso481izbdcrw7y8okfkgdxgc7zoh34q9rxim&ep=v1_gifs_search&rid=giphy.gif&ct=g",
+    "https://media0.giphy.com/media/EWhLjxjiqdZjW/giphy.gif?cid=ecf05e473fifxe2bg4act0zq73nkyjw0h69fxi52t8jt37lf&ep=v1_gifs_search&rid=giphy.gif&ct=g",
+    "https://i.giphy.com/26BRuo6sLetdllPAQ.webp",
+    "https://i.giphy.com/tXL4FHPSnVJ0A.gif",
+]
+
+welcome_gifs = [
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-0j.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-3k.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-6u.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-8W.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-DC.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-Gv.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-J2.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-ZY.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-f5.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-hy.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-kU.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-nh.gif?raw=true",
+    "https://github.com/spoo-me/spoo-bot/blob/main/assets/blinkies/blinkiesCafe-xO.gif?raw=true",
+]
+
+# Server Configuration
+[server]
+# Environment type: "development" or "production" set in .env file
+environment = "${ENVIRONMENT}"
+
+# Whether the bot is being hosted on a cloud platform
+is_cloud_hosted = true
+
+# Keep-alive service configuration (only used when is_cloud_hosted = true)
+[server.keep_alive]
+enabled = true
+host = "0.0.0.0"
+port = "${PORT}" # Environment variable for security

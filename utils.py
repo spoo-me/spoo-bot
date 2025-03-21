@@ -1,79 +1,62 @@
-from constants import *
-
+import requests
+from py_spoo_url import Shortener
+from typing import Literal
+import geopandas as gpd
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.pyplot as plt
+import matplotlib
+import discord
+import random
+import datetime
+import aiohttp
+from schemas import ChartHeatmap
+from config import config
 
 shortener = Shortener()
 
-waiting_gifs = [
-    "https://media3.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif?cid=ecf05e475p246q1gdcu96b5mkqlqvuapb7xay2hywmki7f5q&ep=v1_gifs_search&rid=giphy.gif&ct=g",
-    "https://media2.giphy.com/media/QBd2kLB5qDmysEXre9/giphy.gif?cid=ecf05e47ha6xwa7rq38dcst49nefabwwrods631hvz67ptfg&ep=v1_gifs_search&rid=giphy.gif&ct=g",
-    "https://media2.giphy.com/media/ZgqJGwh2tLj5C/giphy.gif?cid=ecf05e47gflyso481izbdcrw7y8okfkgdxgc7zoh34q9rxim&ep=v1_gifs_search&rid=giphy.gif&ct=g",
-    "https://media0.giphy.com/media/EWhLjxjiqdZjW/giphy.gif?cid=ecf05e473fifxe2bg4act0zq73nkyjw0h69fxi52t8jt37lf&ep=v1_gifs_search&rid=giphy.gif&ct=g",
-    "https://i.giphy.com/26BRuo6sLetdllPAQ.webp",
-    "https://i.giphy.com/tXL4FHPSnVJ0A.gif",
-]
-
-welcome_gifs = [
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-0j.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-3k.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-6u.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-8W.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-DC.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-Gv.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-J2.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-ZY.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-f5.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-hy.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-kU.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-nh.gif?raw=true",
-    "https://github.com/spoo-me/spoo-bot/blob/main/blinkies/blinkiesCafe-xO.gif?raw=true",
-]
-
-commands_ = {
-    "</shorten:1202754338272051252> 🤏🏻 - With this command you can shorten your long urls.": """**Parameters:**
-- **url** - The url you want to shorten 🌐
-- **alias** - The custom alias you want to use for the url  🆔
-- **password** - The password you want to use for the url  🔑
-- **max_clicks** - The maximum number of clicks you want to allow for the url 🖱️""",
-    "</emojify:1202760315247403109> 😉 - With this command you can generate a short emoji link for your long boring urls.": """**Parameters:**
-- **url** - The url you want to shorten 🌐
-- **emojies** - The custom emojies you want to use for the url  😎
-- **password** - The password you want to use for the url  🔑
-- **max_clicks** - The maximum number of clicks you want to allow for the url 🖱️""",
-    "</stats:1202895069628203048> 📊 - With this command you can generate detailed statistical insights and charts of your shortened urls": """**Parameters:**
-- **short_code** - The short code of the url you want to get the stats for 🔢
-- **password** - The password of the url, if the url was password-protected  🔑""",
-    "</get-code:1203775482903134219> 🧑🏻‍💻 - With this command you can get the code to use the spoo.me's official API in your own preferred language": """**Parameters:**
-- **language** - The language you want to get the code for. Available languages are:
-- All of the parameters as in the /shorten command""",
-    "</bot-stats:1203422993275949056> 🤖": "With this command you can get detailed information about the bot and the developer",
-    "</about:1203426619721785384> ℹ️": "With this command you can get detailed information about the bot and the developer",
-    "</support:1203424044418994268> 📞": "With this command you can get the support server invite link",
-    "</invite:1203421046850584706> 💌": "With this command you can get the bot’s invite link to add it to your own server",
-    "</help:1202746904203759646> ❔": "👀 See this message again",
-}
+# Use waiting_gifs and welcome_gifs from config
+waiting_gifs = config.assets.waiting_gifs
+welcome_gifs = config.assets.welcome_gifs
 
 
-def get_server_name_and_icon(server_id):
-    response = requests.get(
-        f"https://discord.com/api/v9/guilds/{server_id}",
-        headers={"Authorization": f"Bot {TOKEN}"},
-    )
-    if response.status_code == 200:
-        data = response.json()
-        name = data["name"]
-        icon = data["icon"]
-        if icon.startswith("a_"):
-            # Animated icon
-            icon_url = f"https://cdn.discordapp.com/icons/{server_id}/{icon}.gif"
+# Build commands_ dictionary from config
+def build_commands_help():
+    commands_ = {}
+    for cmd_name, cmd in config.commands.items():
+        # Build the command string (e.g., "</shorten:1234> 🤏🏻")
+        key = (
+            f"</{cmd_name.replace('_', '-')}:{cmd.id}> {cmd.emoji} - {cmd.description}"
+        )
+
+        # If command has parameters, build the parameter string
+        if cmd.parameters:
+            value: str = "**Parameters:**\n" + "\n".join(
+                [
+                    f"- **{param.name}** - {param.description} {param.emoji}"
+                    for param in cmd.parameters
+                ]
+            )
         else:
-            # Static icon
-            icon_url = f"https://cdn.discordapp.com/icons/{server_id}/{icon}.png"
+            value = ""
 
-        return (name, icon_url)
-    else:
-        # Handle errors
-        print(f"Error: {response.status_code}")
-        return None
+        commands_[key] = value
+    return commands_
+
+
+# Initialize commands_ using the config
+commands_ = build_commands_help()
+
+
+async def fetch_spoo_stats():
+    """Fetch statistics from spoo.me API"""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(config.urls.spoo_metrics) as response:
+                if response.status == 200:
+                    return await response.json()
+    except Exception as e:
+        print(f"Error fetching stats: {e}")
+    return None
 
 
 def generate_chart(
@@ -84,6 +67,9 @@ def generate_chart(
     type: str,
     fill: bool = True,
 ):
+    chart_style = config.ui.charts.style
+    chart_scales = config.ui.charts.scales
+    chart_plugins = config.ui.charts.plugins
 
     data_dict = {
         "type": type,
@@ -92,30 +78,23 @@ def generate_chart(
             "datasets": [],
         },
         "options": {
-            "layout": {
-                "padding": {
-                    "left": 20,
-                    "right": 20,
-                    "top": 5,
-                    "bottom": 20,
-                }
-            },
+            "layout": {"padding": chart_style.padding.dict()},
             "scales": {
                 "y": {
                     "beginAtZero": "true",
                     "grid": {
-                        "color": "rgb(46, 48, 53)",
+                        "color": chart_scales.grid_color,
                     },
                     "ticks": {
-                        "color": "#fff",
+                        "color": chart_scales.tick_color,
                     },
                 },
                 "x": {
                     "grid": {
-                        "color": "rgb(46, 48, 53)",
+                        "color": chart_scales.grid_color,
                     },
                     "ticks": {
-                        "color": "#fff",
+                        "color": chart_scales.tick_color,
                     },
                 },
             },
@@ -123,14 +102,14 @@ def generate_chart(
                 "title": {
                     "display": "true",
                     "text": title,
-                    "color": "#fff",
-                    "fontStyle": "bold",
-                    "fontSize": 20,
+                    "color": chart_plugins.title.color,
+                    "fontStyle": chart_plugins.title.font_style,
+                    "fontSize": chart_plugins.title.font_size,
                 },
                 "legend": {
                     "display": "true",
                     "labels": {
-                        "color": "#fff",
+                        "color": chart_plugins.legend.labels_color,
                     },
                 },
             },
@@ -147,36 +126,36 @@ def generate_chart(
                 "data": list(i.values()),
                 "fill": fill,
                 "backgroundColor": backgrounds[index][0],
-                "borderWidth": 2,
-                "borderRadius": 10,
+                "borderWidth": chart_style.border_width,
+                "borderRadius": chart_style.border_radius,
                 "borderColor": backgrounds[index][1],
-                "lineTension": 0.5,
-                "fill": "origin",
+                "lineTension": chart_style.line_tension,
             }
         )
 
     resp = requests.post(
-        f"https://quickchart.io/chart/create",
-        json={"chart": data_dict, "v": 4, "backgroundColor": "rgb(32, 34, 37)"},
+        config.urls.charts_api_base,
+        json={"chart": data_dict, "v": 4, "backgroundColor": chart_style.background},
     )
 
     return resp.json()
 
 
-def make_countries_heatmap(
+def generate_countries_heatmap(
     data,
     cmap: Literal[
         "YlOrRd", "viridis", "plasma", "inferno", "RdPu_r", "pink", "turbo"
     ] = "YlOrRd",
-    alpha: float = 1,
+    alpha: float = None,
     title: str = "Countries Heatmap",
 ):
+    heatmap_config: ChartHeatmap = config.ui.charts.heatmap
+    alpha = alpha if alpha is not None else heatmap_config.alpha
 
-    matplotlib.rcParams["font.size"] = 18
-    matplotlib.rcParams["axes.labelcolor"] = "White"
+    matplotlib.rcParams["font.size"] = config.ui.charts.style.font_size
+    matplotlib.rcParams["axes.labelcolor"] = config.ui.charts.style.text_color
 
     world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
-
     world = world.merge(
         gpd.GeoDataFrame(data.items(), columns=["Country", "Value"]),
         how="left",
@@ -184,26 +163,30 @@ def make_countries_heatmap(
         right_on="Country",
     )
 
-    plt.figure(figsize=(15, 10), dpi=100)
+    plt.figure(figsize=(15, 10), dpi=heatmap_config.dpi)
     plt.subplots_adjust(left=0.05, right=0.95, bottom=0.05, top=0.95)
 
-    # Create a figure and axis
-    fig, ax = plt.subplots(
-        1, 1, figsize=(15, 10), facecolor=(32 / 255, 34 / 255, 37 / 255, alpha)
+    # Create a figure and axis with background color from config
+    background_color = tuple(
+        int(config.ui.charts.style.background.strip("rgb()").split(",")[i]) / 255
+        for i in range(3)
     )
+    fig, ax = plt.subplots(1, 1, figsize=(15, 10), facecolor=(*background_color, alpha))
 
+    grid_color = tuple(
+        int(config.ui.charts.scales.grid_color.strip("rgb()").split(",")[i]) / 255
+        for i in range(3)
+    )
     for spine in ax.spines.values():
-        spine.set_color((46 / 255, 48 / 255, 53 / 255))
-        spine.set_linewidth(2)
+        spine.set_color(grid_color)
+        spine.set_linewidth(config.ui.charts.style.border_width)
 
-    ax.tick_params(labelcolor="white")
+    ax.tick_params(labelcolor=config.ui.charts.style.text_color)
 
-    # Plot the world map
     world.boundary.plot(ax=ax, linewidth=1)
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.1)
 
-    # Plot the heatmap
     p = world.plot(
         column="Value",
         ax=ax,
@@ -214,41 +197,52 @@ def make_countries_heatmap(
         legend_kwds={
             "label": "Clicks",
         },
-        alpha=0.9,
+        alpha=alpha,
     )
-    p.set_facecolor((32 / 255, 34 / 255, 37 / 255, alpha))
+    p.set_facecolor((*background_color, alpha))
     cbax = cax
-    cbax.tick_params(labelcolor="white")
+    cbax.tick_params(labelcolor=config.ui.charts.style.text_color)
 
-    # Set plot title
     plt.suptitle(
-        "Countries Heatmap",
+        title,
         x=0.5,
         y=0.82,
-        fontsize=22,
-        fontweight="semibold",
-        color="white",
+        fontsize=config.ui.charts.plugins.title.font_size,
+        fontweight=config.ui.charts.plugins.title.font_style,
+        color=config.ui.charts.plugins.title.color,
     )
 
-    # Show the plot
     return plt
 
 
-async def generate_error_message(interaction: discord.Interaction, error, cooldown_configuration=["- ```1 time every 10 seconds```", "- ```5 times every 60 seconds```", "- ```200 times every 24 hours```"]):
-    end_time = datetime.datetime.now() + datetime.timedelta(seconds=error.retry_after)
+async def generate_error_message(
+    interaction: discord.Interaction,
+    error,
+    cooldown_configuration: list[str] | None = None,
+) -> discord.Embed:
+    if cooldown_configuration is None:
+        cooldown_configuration: list[str] = [
+            "- ```1 time every 10 seconds```",
+            "- ```5 times every 60 seconds```",
+            "- ```200 times every 24 hours```",
+        ]
+
+    end_time: datetime.datetime = datetime.datetime.now() + datetime.timedelta(
+        seconds=error.retry_after
+    )
     end_time_ts = int(end_time.timestamp())
 
     embed = discord.Embed(
         title="⏳ Cooldown",
         description=f"### You can use this command again <t:{end_time_ts}:R>",
-        color=discord.Color.red(),
+        color=int(config.ui.colors.error, 16),
         timestamp=interaction.created_at,
     )
-    embed.set_image(url=random.choice(waiting_gifs))
+    embed.set_image(url=random.choice(config.assets.waiting_gifs))
 
     embed.add_field(
-        name = "How many times can I use this command?",
-        value = "\n".join(cooldown_configuration),
+        name="How many times can I use this command?",
+        value="\n".join(cooldown_configuration),
         inline=False,
     )
 
@@ -257,7 +251,7 @@ async def generate_error_message(interaction: discord.Interaction, error, cooldo
             text=f"{interaction.user} used /{interaction.command.name}",
             icon_url=interaction.user.avatar,
         )
-    except:
+    except Exception:
         embed.set_footer(
             text=f"{interaction.user} used /{interaction.command.name}",
             icon_url=interaction.user.default_avatar,
@@ -265,13 +259,14 @@ async def generate_error_message(interaction: discord.Interaction, error, cooldo
 
     return embed
 
+
 async def generate_command_error_embed(
     interaction: discord.Interaction, error, command_name
 ):
     embed = discord.Embed(
         title="An error occured",
         description=f"```{error}```",
-        color=discord.Color.red(),
+        color=int(config.ui.colors.error, 16),
         timestamp=interaction.created_at,
     )
 
@@ -280,7 +275,7 @@ async def generate_command_error_embed(
             text=f"{interaction.user.name} used /{command_name}",
             icon_url=interaction.user.avatar,
         )
-    except:
+    except Exception:
         embed.set_footer(
             text=f"{interaction.user.name} used /{command_name}",
             icon_url=interaction.user.default_avatar,

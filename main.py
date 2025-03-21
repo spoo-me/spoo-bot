@@ -4,25 +4,27 @@ import random
 import statistics
 import sys
 import time
-from constants import TOKEN
-from discord.ext import commands
-from discord import app_commands, ui
+from discord.app_commands.models import AppCommand
+from discord.ext import commands, tasks
 import discord
-from utils import *
-from api import *
+from config import config
+from api import keep_alive
+from utils import welcome_gifs, commands_, fetch_spoo_stats
 
 start_time = None
 latencies = []
-
-# command to show the code to use the api based on the user selected language
 
 
 class spooBot(commands.Bot):
     def __init__(self):
         super().__init__(
-            command_prefix="$", intents=discord.Intents.all(), help_command=None
+            command_prefix=config.bot.command_prefix,
+            intents=discord.Intents.all(),
+            help_command=None,
         )
         self.synced = False
+        self.stats_channel_1 = None  # Will store channel object for total clicks
+        self.stats_channel_2 = None  # Will store channel object for total shortlinks
 
     async def on_ready(self):
         await load()
@@ -33,69 +35,94 @@ class spooBot(commands.Bot):
         await self.wait_until_ready()
         if not self.synced:
             await self.tree.sync()
-            await bot.change_presence(
-                activity=discord.CustomActivity(
-                    name="Custom Status",
-                    state=f"Shorten your URLs, not your possibilities.",
+            try:
+                await bot.change_presence(
+                    activity=discord.CustomActivity(
+                        name="Custom Status",
+                        state=config.bot.custom_status,
+                    )
                 )
-            )
+                print("Status set to custom status")
+            except Exception as e:
+                print(f"Error setting custom status: {e}", file=sys.stdout)
             self.synced = True
 
-        try:
-            file = r"assets\\s.gif"
-            with open(file, "rb") as avatar:
-                await self.user.edit(avatar=avatar.read())
-                print("Applied Animated Avatar")
-        except Exception as e:
-            print(e, file=sys.stdout)
-            pass
+            # Start the stats update task
+            self.update_stats.start()
 
         print(f"Logged in as {self.user.name} (ID: {self.user.id})")
         print(f"Connected to {len(self.guilds)} guilds")
+
+    @tasks.loop(minutes=10)
+    async def update_stats(self):
+        """Update channel names with current statistics"""
+        if not (self.stats_channel_1 and self.stats_channel_2):
+            guild = self.get_guild(int(config.discord.ids.parent_server))
+            if guild:
+                # Get the channels for displaying stats
+                self.stats_channel_1: discord.TextChannel | None = guild.get_channel(
+                    int(config.discord.ids.channels.stats_clicks)
+                )
+                self.stats_channel_2: discord.TextChannel | None = guild.get_channel(
+                    int(config.discord.ids.channels.stats_shortlinks)
+                )
+
+        if self.stats_channel_1 and self.stats_channel_2:
+            stats = await fetch_spoo_stats()
+            if stats:
+                try:
+                    await self.stats_channel_1.edit(
+                        name=f"📈︱Clicks— {stats['total-clicks']}"
+                    )
+                    await self.stats_channel_2.edit(
+                        name=f"🔗︱Links— {stats['total-shortlinks']}"
+                    )
+                except Exception as e:
+                    print(f"Error updating channel names: {e}", file=sys.stdout)
 
 
 bot = spooBot()
 
 
-async def load():
+async def load() -> None:
     for f in os.listdir("cogs"):
         if f.endswith(".py"):
             await bot.load_extension(f"cogs.{f[:-3]}")
 
 
 @bot.event
-async def on_message(message):
+async def on_message(message) -> None:
     if message.author == bot.user:
         return
 
-    if bot.user in message.mentions:
-        if message.type is not discord.MessageType.reply:
-            embed = discord.Embed(
-                description="Hello, I am the SpooBot. I am a URL shortener bot that makes your URLs spoo-tacular! 😎\nType </help:1202746904203759646> to see the list of commands I can do for you!",
-                color=discord.Color.og_blurple(),
-            )
-
-            await message.reply(embed=embed)
+    if bot.user in message.mentions and message.type is not discord.MessageType.reply:
+        embed = discord.Embed(
+            description=config.ui.messages.bot_mention.format(
+                help_cmd_id=config.commands["help"].id
+            ),
+            color=int(config.ui.colors.primary, 16),
+        )
+        await message.reply(embed=embed)
 
     await bot.process_commands(message)
 
 
 @bot.event
 async def on_member_join(member):
-    channel = bot.get_channel(1192388005206433894)
+    channel = bot.get_channel(int(config.discord.ids.channels.welcome))
 
     embed = discord.Embed(
         title="Welcome to the spoo.me Support Server!",
-        description=f"Hey {member.mention}! Welcome to the support server for spoo.me, the best URL shortener out there! We hope you enjoy your stay here!",
-        color=discord.Color.blurple(),
-        url="https://spoo.me",
+        description=config.ui.messages.welcome.format(mention=member.mention),
+        color=int(config.ui.colors.primary, 16),
+        url=config.urls.api_base,
     )
 
     embed.set_image(url=random.choice(welcome_gifs))
 
     try:
         embed.set_thumbnail(url=member.avatar.url)
-    except:
+    except Exception:
         embed.set_thumbnail(url=member.default_avatar.url)
 
     await channel.send(embed=embed)
@@ -103,9 +130,9 @@ async def on_member_join(member):
 
 @bot.command()
 @commands.is_owner()
-async def sync(ctx):
+async def sync(ctx) -> None:
     await bot.tree.sync()
-    synced = await bot.tree.sync()
+    synced: tasks.List[AppCommand] = await bot.tree.sync()
     if len(synced) > 0:
         await ctx.send(f"Successfully Synced {len(synced)} Commands ✔️")
     else:
@@ -113,8 +140,8 @@ async def sync(ctx):
 
 
 @bot.event
-async def on_command_completion(ctx):
-    end = time.perf_counter()
+async def on_command_completion(ctx) -> None:
+    end: float = time.perf_counter()
     start = ctx.start
     latency = (end - start) * 1000
     latencies.append(latency)
@@ -123,28 +150,25 @@ async def on_command_completion(ctx):
 
 
 @bot.before_invoke
-async def before_invoke(ctx):
+async def before_invoke(ctx) -> None:
     start = time.perf_counter()
     ctx.start = start
 
 
 @bot.command()
-async def ping(ctx):
+async def ping(ctx) -> None:
     try:
-        embed = discord.Embed(title="Pong!", color=discord.Color.green())
+        embed = discord.Embed(title="Pong!", color=int(config.ui.colors.success, 16))
         message = await ctx.send(embed=embed)
 
-        end = time.perf_counter()
-
+        end: float = time.perf_counter()
         latency = (end - ctx.start) * 1000
 
         embed.add_field(
             name="Latency", value=f"{bot.latency * 1000:.2f} ms", inline=False
         )
-
         embed.add_field(name="Message Latency", value=f"{latency:.2f} ms", inline=False)
 
-        # Calculate the average ping of the bot in the last 10 minutes
         if latencies:
             average_ping = statistics.mean(latencies)
             embed.add_field(
@@ -152,10 +176,8 @@ async def ping(ctx):
             )
 
         global start_time
-
-        current_time = datetime.datetime.now(datetime.UTC)
-        delta = current_time - start_time
-
+        current_time: datetime.datetime = datetime.datetime.now(datetime.UTC)
+        delta: datetime.timedelta = current_time - start_time
         hours, remainder = divmod(int(delta.total_seconds()), 3600)
         minutes, seconds = divmod(remainder, 60)
 
@@ -165,12 +187,10 @@ async def ping(ctx):
             inline=False,
         )
         embed.set_footer(
-            text="Information requested by: {}".format(ctx.author.name),
+            text=f"Information requested by: {ctx.author.name}",
             icon_url=ctx.author.avatar.url,
         )
-        embed.set_thumbnail(
-            url="https://uploads.poxipage.com/7q5iw7dwl5jc3zdjaergjhpat27tws8bkr9fgy45_938843265627717703-webp"
-        )
+        embed.set_thumbnail(url=config.assets.ping_uri)
 
         await message.edit(embed=embed)
 
@@ -180,31 +200,31 @@ async def ping(ctx):
 
 @bot.hybrid_command(
     name="help",
-    description="View the various commands of this bot 📃"
+    description=f"{config.commands['help'].description} {config.commands['help'].emoji}",
 )
-async def help(ctx):
-    user = bot.get_user(1202738385194717205)
-    profilePicture = user.avatar.url
+async def help(ctx) -> None:
+    user: discord.User | None = bot.get_user(int(config.bot.bot_id))
+    profilePicture: str = user.avatar.url
 
     embed = discord.Embed(
         title="SpooBot Commands",
         description="Here is the list of the available commands:",
-        color=discord.Color.blurple(),
+        color=int(config.ui.colors.primary, 16),
         timestamp=ctx.message.created_at,
     )
 
     embed.set_thumbnail(url=profilePicture)
-    for i in commands_.keys():
-        embed.add_field(name=i, value=commands_[i], inline=False)
+    for cmd_name, cmd_help in commands_.items():
+        embed.add_field(name=cmd_name, value=cmd_help, inline=False)
 
     try:
         embed.set_footer(
-            text="Information requested by: {}".format(ctx.author.name),
+            text=f"Information requested by: {ctx.author.name}",
             icon_url=ctx.author.avatar.url,
         )
-    except:
+    except Exception:
         embed.set_footer(
-            text="Information requested by: {}".format(ctx.author.name),
+            text=f"Information requested by: {ctx.author.name}",
             icon_url=ctx.author.default_avatar.url,
         )
 
@@ -215,22 +235,22 @@ async def help(ctx):
     name="invite",
     description="Get the invite link for the bot 💌",
 )
-async def invite(ctx):
+async def invite(ctx) -> None:
     embed = discord.Embed(
         title="Invite SpooBot to your server!",
-        description="Click [here](https://discord.com/api/oauth2/authorize?client_id=1202738385194717205&permissions=9242837113920&scope=bot) to invite SpooBot to your server!",
-        color=discord.Color.orange(),
+        description=f"Click [here]({config.urls.bot_invite}) to invite SpooBot to your server!",
+        color=int(config.ui.colors.warning, 16),
         timestamp=ctx.message.created_at,
     )
 
     try:
         embed.set_footer(
-            text="Information requested by: {}".format(ctx.author.name),
+            text=f"Information requested by: {ctx.author.name}",
             icon_url=ctx.author.avatar.url,
         )
-    except:
+    except Exception:
         embed.set_footer(
-            text="Information requested by: {}".format(ctx.author.name),
+            text=f"Information requested by: {ctx.author.name}",
             icon_url=ctx.author.default_avatar.url,
         )
 
@@ -239,44 +259,43 @@ async def invite(ctx):
 
 @bot.hybrid_command(
     name="bot-stats",
-    description="View the stats of the bot 👀",
+    description=f"{config.commands['bot_stats'].description} {config.commands['bot_stats'].emoji}",
 )
-async def stats(ctx):
+async def stats(ctx) -> None:
     global start_time
 
-    current_time = datetime.datetime.now(datetime.UTC)
-    delta = current_time - start_time
-
+    current_time: datetime.datetime = datetime.datetime.now(datetime.UTC)
+    delta: datetime.timedelta = current_time - start_time
     hours, remainder = divmod(int(delta.total_seconds()), 3600)
     minutes, seconds = divmod(remainder, 60)
 
     embed = discord.Embed(
         title="SpooBot Stats",
         description="Here are the stats of the bot:",
-        color=discord.Color.og_blurple(),
+        color=int(config.ui.colors.primary, 16),
         timestamp=ctx.message.created_at,
     )
 
     embed.add_field(name="Servers", value=f"```{len(bot.guilds)}```", inline=True)
     embed.add_field(name="Users", value=f"```{len(bot.users)}```", inline=True)
-
     embed.add_field(
         name="Uptime",
         value=f"```{hours} hours {minutes} minutes {seconds} seconds```",
         inline=False,
     )
-
-    embed.add_field(name="Command Prefix", value=f"``` $ ```", inline=True)
+    embed.add_field(
+        name="Command Prefix", value=f"```{config.bot.command_prefix}```", inline=True
+    )
     embed.add_field(name="Total Commands", value=f"```{len(commands_)}```", inline=True)
 
     try:
         embed.set_footer(
-            text="Information requested by: {}".format(ctx.author.name),
+            text=f"Information requested by: {ctx.author.name}",
             icon_url=ctx.author.avatar.url,
         )
-    except:
+    except Exception:
         embed.set_footer(
-            text="Information requested by: {}".format(ctx.author.name),
+            text=f"Information requested by: {ctx.author.name}",
             icon_url=ctx.author.default_avatar.url,
         )
 
@@ -287,26 +306,22 @@ async def stats(ctx):
     name="support",
     description="Join the Support Server of the bot 🛠️",
 )
-async def support(ctx):
+async def support(ctx) -> None:
     embed = discord.Embed(
         title="Join the SpooBot Support Server!",
-        description="Click https://spoo.me/discord to join the support server for SpooBot!",
-        color=discord.Color.gold(),
+        description=f"Click {config.urls.discord_invite} to join the support server for SpooBot!",
+        color=int(config.ui.colors.warning, 16),
         timestamp=ctx.message.created_at,
-    )
-
-    embed.set_thumbnail(
-        url="https://cdn.discordapp.com/icons/1192388005206433892/461edd6dd7b92f24a94505fe3a660f91.webp?size=1024&format=webp&width=0&height=320"
     )
 
     try:
         embed.set_footer(
-            text="Information requested by: {}".format(ctx.author.name),
+            text=f"Information requested by: {ctx.author.name}",
             icon_url=ctx.author.avatar.url,
         )
-    except:
+    except Exception:
         embed.set_footer(
-            text="Information requested by: {}".format(ctx.author.name),
+            text=f"Information requested by: {ctx.author.name}",
             icon_url=ctx.author.default_avatar.url,
         )
 
@@ -317,12 +332,12 @@ async def support(ctx):
     name="about",
     description="View information about the bot 🤖",
 )
-async def about(ctx):
+async def about(ctx) -> None:
     embed = discord.Embed(
         title="About SpooBot 🙌",
-        description="```SpooBot is a URL shortener bot that makes your URLs spoo-tacular! 🎉 It is a bot that saves you time and hassle by shortening URLs for you, so you can focus on more important things! 😎\nBut wait, there's more! SpooBot also lets you view all your URL statistics from this bot, so you can track how many clicks, views, and visits your URLs get! 📈\nSpooBot is the ultimate URL shortener bot that you need in your life! 😍```",
-        color=discord.Color.greyple(),
-        url="https://spoo.me",
+        description=f"```{config.bot.description}```",
+        color=int(config.ui.colors.info, 16),
+        url=config.urls.api_base,
         timestamp=ctx.message.created_at,
     )
 
@@ -342,17 +357,30 @@ async def about(ctx):
         inline=False,
     )
 
-    user = bot.get_user(1202738385194717205)
+    stats = await fetch_spoo_stats()
+    if stats:
+        embed.add_field(
+            name="Total Shortlinks 🔗",
+            value=f"```{stats['total-shortlinks']}```",
+            inline=True,
+        )
+        embed.add_field(
+            name="Total Clicks 📈",
+            value=f"```{stats['total-clicks']}```",
+            inline=True,
+        )
+
+    user: discord.User | None = bot.get_user(int(config.bot.bot_id))
     embed.set_thumbnail(url=user.avatar.url)
 
     try:
         embed.set_footer(
-            text="Information requested by: {}".format(ctx.author.name),
+            text=f"Information requested by: {ctx.author.name}",
             icon_url=ctx.author.avatar.url,
         )
-    except:
+    except Exception:
         embed.set_footer(
-            text="Information requested by: {}".format(ctx.author.name),
+            text=f"Information requested by: {ctx.author.name}",
             icon_url=ctx.author.default_avatar.url,
         )
 
@@ -360,17 +388,17 @@ async def about(ctx):
     view.add_item(
         discord.ui.Button(
             label="View Source Code",
-            url="https://github.com/spoo-me/spoo-bot",
+            url=config.urls.github,
             style=discord.ButtonStyle.link,
-            emoji="<:git:1203429172903542835>",
+            emoji=f"<:git:{config.bot.emojis.git}>",
         )
     )
     view.add_item(
         discord.ui.Button(
             label="View Website",
-            url="https://spoo.me",
+            url=config.urls.api_base,
             style=discord.ButtonStyle.link,
-            emoji="<:spoo:1203429402071797760>",
+            emoji=f"<:spoo:{config.bot.emojis.spoo}>",
         )
     )
 
@@ -378,5 +406,10 @@ async def about(ctx):
 
 
 if __name__ == "__main__":
-    keep_alive()
-    bot.run(token=TOKEN)
+    if (
+        config.server.environment != "development"
+        and config.server.is_cloud_hosted
+        and config.server.keep_alive.enabled
+    ):
+        keep_alive()
+    bot.run(token=config.bot.bot_token)
