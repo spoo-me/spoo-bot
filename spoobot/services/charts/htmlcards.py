@@ -22,10 +22,10 @@ _TEMPLATE = Path("spoobot/templates/cards/stats-card.html")
 _SVG = Path("spoobot/templates/cards/world.svg")
 
 
-def _bars_html(rows: list[tuple[str, int]]) -> str:
+def _bars_html(rows: list[tuple[str, int]], limit: int = 10) -> str:
     hi = max((v for _, v in rows), default=1) or 1
     out = []
-    for label, value in rows[:10]:
+    for label, value in rows[:limit]:
         pct = int(value / hi * 100)
         out.append(
             f'<div class="bar"><div class="label">{html.escape(label)}</div>'
@@ -67,13 +67,17 @@ class HtmlCardRenderer:
                 await page.close()
 
     async def _card(
-        self, title: str, numbers: list[tuple[str, str]], rows: list[tuple[str, int]]
+        self,
+        title: str,
+        numbers: list[tuple[str, str]],
+        rows: list[tuple[str, int]],
+        limit: int = 10,
     ) -> bytes:
         doc = (
             _TEMPLATE.read_text(encoding="utf-8")
             .replace("{{title}}", html.escape(title))
             .replace("{{numbers}}", _numbers_html(numbers))
-            .replace("{{bars}}", _bars_html(rows))
+            .replace("{{bars}}", _bars_html(rows, limit))
         )
         return await self._shoot(doc)
 
@@ -87,7 +91,9 @@ class HtmlCardRenderer:
         numbers = [("clicks", f"{total:,}")]
         if unique:
             numbers.append(("unique", f"{sum(v for _, v in unique):,}"))
-        return await self._card(title, numbers, points)
+        if len(points) > 20:
+            numbers.append(("window", f"last 20 of {len(points)}"))
+        return await self._card(title, numbers, points[-20:], limit=20)
 
     async def breakdown(self, title: str, rows: list[tuple[str, int]]) -> bytes:
         return await self._card(

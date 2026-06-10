@@ -20,6 +20,7 @@ cards = [
     "playwright>=1.60.0",
 ]
 dev = [
+    "pillow>=12.2.0",
     "pyright>=1.1.410",
     "pytest>=9.0.3",
     "pytest-aiohttp>=1.1.1",

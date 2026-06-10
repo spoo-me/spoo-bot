@@ -36,7 +36,15 @@ def render_heatmap_png(
 ) -> bytes:
     svg = Path(svg_path).read_text(encoding="utf-8")
     css = build_country_css(counts)
-    # Inject a <style> block right after the opening <svg ...> tag.
-    head_end = svg.index(">", svg.index("<svg")) + 1
-    styled = f"{svg[:head_end]}<style>{css}</style>{svg[head_end:]}"
+    # Inject our <style> block AFTER any stylesheet the document already
+    # carries: with equal selector specificity resvg lets the later
+    # stylesheet win the cascade, so injecting before the SVG's own
+    # `style_css_sheet` (as the Wikimedia blank maps ship) would leave its
+    # gray `.landxx` / white `.oceanxx` rules overriding ours.
+    last_style = svg.rfind("</style>")
+    if last_style != -1:
+        insert_at = last_style + len("</style>")
+    else:
+        insert_at = svg.index(">", svg.index("<svg")) + 1
+    styled = f"{svg[:insert_at]}<style>{css}</style>{svg[insert_at:]}"
     return bytes(resvg_py.svg_to_bytes(svg_string=styled, width=width))
