@@ -1,18 +1,46 @@
 [project]
 name = "spoobot"
-version = "0.1.0"
-description = "Official Discord bot for the Spoo.me community"
+version = "2.0.0a0"
+description = "Official Discord bot for spoo.me"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "aiohttp>=3.11.14",
-    "discord-py>=2.5.2",
-    "flask>=3.1.0",
-    "gunicorn>=23.0.0",
-    "py-spoo-url>=0.0.6",
-    "pydantic>=2.10.6",
-    "python-dotenv>=1.0.1",
-    "requests>=2.32.3",
-    "tomli>=2.2.1",
-    "validators>=0.34.0",
+    "aiohttp>=3.14.1",
+    "aiosqlite>=0.22.1",
+    "cryptography>=48.0.1",
+    "discord-py>=2.7.1",
+    "httpx>=0.28.1",
+    "pydantic>=2.13.4",
+    "python-dotenv>=1.2.2",
+    "resvg-py>=0.3.2",
 ]
+
+[dependency-groups]
+cards = [
+    "playwright>=1.60.0",
+]
+dev = [
+    "pyright>=1.1.410",
+    "pytest>=9.0.3",
+    "pytest-aiohttp>=1.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.15.16",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+extend-exclude = ["main.py", "api.py", "utils.py", "utils_code.py", "cogs", "schemas", "config.py"]
+
+[tool.pyright]
+include = ["spoobot", "tests", "scripts"]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"
+
+[tool.uv]
+package = false
