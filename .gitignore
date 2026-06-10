@@ -181,3 +181,4 @@ todo.md
 data/
 *.sqlite3
 .venv/
+bakeoff/
