@@ -229,3 +229,25 @@ is_cloud_hosted = false
 enabled = false
 host = "0.0.0.0"
 port = "${PORT}" # Environment variable for security
+
+# ───────────────────────── v2 additions ─────────────────────────
+[spoo]
+api_base = "https://spoo.me"
+qr_api_base = "https://qr.spoo.me"
+
+[auth]
+app_id = "spoo-discord"
+state_secret = "${STATE_SECRET}"   # >=32 chars; generate: openssl rand -hex 32
+vault_key = "${VAULT_KEY}"         # Fernet key; generate: uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+vault_path = "data/vault.sqlite3"
+link_ttl_seconds = 600
+
+[web]
+enabled = true
+host = "0.0.0.0"
+port = 9274
+public_callback_url = "https://discord-bot.spoo.me/callback"
+
+[charts]
+renderer = "quickchart"            # or "htmlcards" (requires: uv sync --group cards)
+quickchart_url = "https://quickchart.io"
