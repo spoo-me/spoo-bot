@@ -44,7 +44,9 @@ class Meta(commands.Cog):
             embed.set_thumbnail(url=self.bot.user.avatar.url)
         await ctx.send(embed=embeds.user_footer(embed, ctx.author))
 
-    @commands.hybrid_command(name="invite", description="Invite SpooBot to your server 💌")
+    @commands.hybrid_command(
+        name="invite", description="Invite SpooBot to your server 💌"
+    )
     async def invite(self, ctx: commands.Context[SpooBot]) -> None:
         cfg = self.bot.config
         embed = discord.Embed(
@@ -74,8 +76,14 @@ class Meta(commands.Cog):
             url=cfg.spoo.api_base,
         )
         metrics = await self.bot.spoo.site_metrics()
-        embed.add_field(name="Total Shortlinks 🔗", value=f"```{metrics.total_shortlinks:,}```", inline=True)
-        embed.add_field(name="Total Clicks 📈", value=f"```{metrics.total_clicks:,}```", inline=True)
+        embed.add_field(
+            name="Total Shortlinks 🔗",
+            value=f"```{metrics.total_shortlinks:,}```",
+            inline=True,
+        )
+        embed.add_field(
+            name="Total Clicks 📈", value=f"```{metrics.total_clicks:,}```", inline=True
+        )
         view = discord.ui.View()
         view.add_item(discord.ui.Button(label="Source Code", url=cfg.urls.github))
         view.add_item(discord.ui.Button(label="Website", url=cfg.spoo.api_base))
@@ -84,16 +92,30 @@ class Meta(commands.Cog):
     @commands.hybrid_command(name="bot-stats", description="Bot statistics 🤖")
     async def botstats(self, ctx: commands.Context[SpooBot]) -> None:
         embed = discord.Embed(title="SpooBot Stats", color=theme.PRIMARY)
-        embed.add_field(name="Servers", value=f"```{len(self.bot.guilds)}```", inline=True)
-        embed.add_field(name="Users", value=f"```{sum(g.member_count or 0 for g in self.bot.guilds):,}```", inline=True)
+        embed.add_field(
+            name="Servers", value=f"```{len(self.bot.guilds)}```", inline=True
+        )
+        embed.add_field(
+            name="Users",
+            value=f"```{sum(g.member_count or 0 for g in self.bot.guilds):,}```",
+            inline=True,
+        )
         embed.add_field(name="Uptime", value=f"```{self._uptime()}```", inline=False)
-        embed.add_field(name="Gateway Latency", value=f"```{self.bot.latency * 1000:.0f} ms```", inline=True)
+        embed.add_field(
+            name="Gateway Latency",
+            value=f"```{self.bot.latency * 1000:.0f} ms```",
+            inline=True,
+        )
         await ctx.send(embed=embeds.user_footer(embed, ctx.author))
 
     @commands.command(name="ping")
     async def ping(self, ctx: commands.Context[SpooBot]) -> None:
         embed = discord.Embed(title="Pong!", color=theme.SUCCESS)
-        embed.add_field(name="Gateway Latency", value=f"{self.bot.latency * 1000:.2f} ms", inline=False)
+        embed.add_field(
+            name="Gateway Latency",
+            value=f"{self.bot.latency * 1000:.2f} ms",
+            inline=False,
+        )
         embed.add_field(name="Uptime", value=self._uptime(), inline=False)
         await ctx.send(embed=embeds.user_footer(embed, ctx.author))
 

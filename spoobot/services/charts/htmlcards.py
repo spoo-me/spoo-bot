@@ -90,7 +90,9 @@ class HtmlCardRenderer:
         return await self._card(title, numbers, points)
 
     async def breakdown(self, title: str, rows: list[tuple[str, int]]) -> bytes:
-        return await self._card(title, [("total", f"{sum(v for _, v in rows):,}")], rows)
+        return await self._card(
+            title, [("total", f"{sum(v for _, v in rows):,}")], rows
+        )
 
     async def country_heatmap(self, counts: dict[str, int]) -> bytes:
         return await asyncio.to_thread(render_heatmap_png, counts, svg_path=_SVG)

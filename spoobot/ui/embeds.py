@@ -5,7 +5,9 @@ import discord
 from spoobot.ui import theme
 
 
-def user_footer(embed: discord.Embed, user: discord.abc.User, *, prefix: str = "Requested by") -> discord.Embed:
+def user_footer(
+    embed: discord.Embed, user: discord.abc.User, *, prefix: str = "Requested by"
+) -> discord.Embed:
     """The one place the avatar-fallback dance lives (was copy-pasted 15× before)."""
     icon = user.avatar or user.default_avatar
     embed.set_footer(text=f"{prefix} {user.name}", icon_url=icon.url)

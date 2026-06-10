@@ -18,12 +18,15 @@ PAGE_SIZE = 8
 
 
 class EditLinkModal(discord.ui.Modal, title="Edit link"):
-    long_url = discord.ui.TextInput(label="Destination URL", required=False,
-                                    placeholder="leave empty to keep")
-    password = discord.ui.TextInput(label="Password (empty = keep, 'off' = remove)",
-                                    required=False)
-    max_clicks = discord.ui.TextInput(label="Max clicks (empty = keep, 0 = remove)",
-                                      required=False)
+    long_url = discord.ui.TextInput(
+        label="Destination URL", required=False, placeholder="leave empty to keep"
+    )
+    password = discord.ui.TextInput(
+        label="Password (empty = keep, 'off' = remove)", required=False
+    )
+    max_clicks = discord.ui.TextInput(
+        label="Max clicks (empty = keep, 0 = remove)", required=False
+    )
 
     def __init__(self, cog: LinksCog, url_id: str, alias: str) -> None:
         super().__init__()
@@ -34,11 +37,15 @@ class EditLinkModal(discord.ui.Modal, title="Edit link"):
         if self.long_url.value:
             fields["long_url"] = self.long_url.value
         if self.password.value:
-            fields["password"] = None if self.password.value == "off" else self.password.value
+            fields["password"] = (
+                None if self.password.value == "off" else self.password.value
+            )
         if self.max_clicks.value:
             fields["max_clicks"] = int(self.max_clicks.value)
         if not fields:
-            await interaction.response.send_message("Nothing to change.", ephemeral=True)
+            await interaction.response.send_message(
+                "Nothing to change.", ephemeral=True
+            )
             return
         await interaction.response.defer(ephemeral=True)
         await self.cog.bot.auth.authed_call(
@@ -57,10 +64,14 @@ class LinksCog(commands.Cog):
     def __init__(self, bot: SpooBot) -> None:
         self.bot = bot
 
-    async def _page(self, user_id: int, page: int, search: str | None = None) -> UrlPage:
+    async def _page(
+        self, user_id: int, page: int, search: str | None = None
+    ) -> UrlPage:
         return await self.bot.auth.authed_call(
             user_id,
-            lambda t: self.bot.spoo.list_urls(t, page=page, page_size=PAGE_SIZE, search=search),
+            lambda t: self.bot.spoo.list_urls(
+                t, page=page, page_size=PAGE_SIZE, search=search
+            ),
         )
 
     async def _resolve_id(self, user_id: int, alias: str) -> tuple[str, str]:
@@ -81,8 +92,10 @@ class LinksCog(commands.Cog):
             page = await self._page(interaction.user.id, 1, search=current or None)
         except Exception:
             return []
-        return [app_commands.Choice(name=f"{u.alias} → {u.long_url[:60]}", value=u.alias)
-                for u in page.items][:25]
+        return [
+            app_commands.Choice(name=f"{u.alias} → {u.long_url[:60]}", value=u.alias)
+            for u in page.items
+        ][:25]
 
     # ── commands ─────────────────────────────────────────────────────────
 
@@ -108,10 +121,13 @@ class LinksCog(commands.Cog):
         current = next(u.status for u in page.items if u.alias == alias)
         new_status = "INACTIVE" if current == "ACTIVE" else "ACTIVE"
         await self.bot.auth.authed_call(
-            interaction.user.id, lambda t: self.bot.spoo.set_url_status(t, url_id, new_status)
+            interaction.user.id,
+            lambda t: self.bot.spoo.set_url_status(t, url_id, new_status),
         )
         await interaction.followup.send(
-            embed=discord.Embed(title=f"`{alias}` is now {new_status} ✓", color=theme.SUCCESS),
+            embed=discord.Embed(
+                title=f"`{alias}` is now {new_status} ✓", color=theme.SUCCESS
+            ),
             ephemeral=True,
         )
 
@@ -175,8 +191,10 @@ class ManageButton(discord.ui.Button["LinksBrowserView"]):
                 lambda t: self.cog.bot.spoo.set_url_status(t, self.item.id, new_status),
             )
             await interaction.followup.send(
-                embed=discord.Embed(title=f"`{self.item.alias}` is now {new_status} ✓",
-                                    color=theme.SUCCESS),
+                embed=discord.Embed(
+                    title=f"`{self.item.alias}` is now {new_status} ✓",
+                    color=theme.SUCCESS,
+                ),
                 ephemeral=True,
             )
 
@@ -191,12 +209,17 @@ class ManageButton(discord.ui.Button["LinksBrowserView"]):
                 ephemeral=True,
             )
 
-        edit_btn.callback, toggle_btn.callback, delete_btn.callback = on_edit, on_toggle, on_delete
+        edit_btn.callback, toggle_btn.callback, delete_btn.callback = (
+            on_edit,
+            on_toggle,
+            on_delete,
+        )
         for b in (edit_btn, toggle_btn, delete_btn):
             view.add_item(b)
         await interaction.response.send_message(
             f"Managing **`{self.item.alias}`** → {self.item.long_url[:80]}",
-            view=view, ephemeral=True,
+            view=view,
+            ephemeral=True,
         )
 
 
@@ -208,11 +231,15 @@ class PagerRow(discord.ui.ActionRow["LinksBrowserView"]):
         self.next.disabled = not has_next
 
     @discord.ui.button(label="◀ Prev", style=discord.ButtonStyle.secondary)
-    async def prev(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def prev(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ) -> None:
         await self._flip(interaction, self.page - 1)
 
     @discord.ui.button(label="Next ▶", style=discord.ButtonStyle.secondary)
-    async def next(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def next(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ) -> None:
         await self._flip(interaction, self.page + 1)
 
     async def _flip(self, interaction: discord.Interaction, new_page: int) -> None:
@@ -228,10 +255,14 @@ class LinksBrowserView(discord.ui.LayoutView):
         super().__init__(timeout=900)
         container = discord.ui.Container(accent_colour=discord.Colour(theme.PRIMARY))
         container.add_item(
-            discord.ui.TextDisplay(f"### 🗂️ Your links — page {page.page} · {page.total} total")
+            discord.ui.TextDisplay(
+                f"### 🗂️ Your links — page {page.page} · {page.total} total"
+            )
         )
         if not page.items:
-            container.add_item(discord.ui.TextDisplay("No links yet. Try **/shorten**!"))
+            container.add_item(
+                discord.ui.TextDisplay("No links yet. Try **/shorten**!")
+            )
         for u in page.items:
             flag = "🟢" if u.status == "ACTIVE" else "⚪"
             extras: list[str] = []
@@ -260,17 +291,22 @@ class ConfirmDelete(discord.ui.View):
         self.cog, self.url_id, self.alias = cog, url_id, alias
 
     @discord.ui.button(label="Delete forever", style=discord.ButtonStyle.danger)
-    async def confirm(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def confirm(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ) -> None:
         await interaction.response.defer()
         await self.cog.bot.auth.authed_call(
             interaction.user.id, lambda t: self.cog.bot.spoo.delete_url(t, self.url_id)
         )
         await interaction.edit_original_response(
-            embed=discord.Embed(title=f"Deleted `{self.alias}` ✓", color=theme.SUCCESS), view=None
+            embed=discord.Embed(title=f"Deleted `{self.alias}` ✓", color=theme.SUCCESS),
+            view=None,
         )
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
-    async def cancel(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def cancel(
+        self, interaction: discord.Interaction, _: discord.ui.Button
+    ) -> None:
         await interaction.response.defer()
         await interaction.edit_original_response(
             embed=discord.Embed(title="Cancelled", color=theme.PRIMARY), view=None

@@ -10,7 +10,9 @@ from spoobot.services.vault import LinkSession, TokenVault
 
 @pytest.fixture
 async def vault(tmp_path):
-    v = TokenVault(tmp_path / "vault.sqlite3", TokenCipher(Fernet.generate_key().decode()))
+    v = TokenVault(
+        tmp_path / "vault.sqlite3", TokenCipher(Fernet.generate_key().decode())
+    )
     await v.init()
     yield v
     await v.close()
@@ -44,7 +46,11 @@ async def test_put_overwrites(vault):
 
 
 async def test_link_session_single_use(vault):
-    await vault.create_link_session("nonce1", discord_user_id=5, interaction_token="itok")
+    await vault.create_link_session(
+        "nonce1", discord_user_id=5, interaction_token="itok"
+    )
     sess = await vault.consume_link_session("nonce1")
-    assert sess == LinkSession(nonce="nonce1", discord_user_id=5, interaction_token="itok")
+    assert sess == LinkSession(
+        nonce="nonce1", discord_user_id=5, interaction_token="itok"
+    )
     assert await vault.consume_link_session("nonce1") is None

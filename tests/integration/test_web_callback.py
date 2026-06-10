@@ -16,7 +16,9 @@ class FakeAuth:
         if self.raises:
             raise self.raises
         self.completed.append((code, state))
-        return LinkResult(discord_user_id=1, spoo_email="z@example.com", interaction_token="itok")
+        return LinkResult(
+            discord_user_id=1, spoo_email="z@example.com", interaction_token="itok"
+        )
 
 
 class FakeNotifier:
@@ -39,7 +41,9 @@ async def client():
 
 async def test_callback_success(client):
     c, auth, notifier = client
-    resp = await c.get("/callback", params={"code": "abc", "state": "n.1.9999999999.sig"})
+    resp = await c.get(
+        "/callback", params={"code": "abc", "state": "n.1.9999999999.sig"}
+    )
     assert resp.status == 200
     assert "linked" in (await resp.text()).lower()
     assert auth.completed == [("abc", "n.1.9999999999.sig")]

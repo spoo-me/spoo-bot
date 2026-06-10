@@ -36,23 +36,32 @@ def make_app(
         state = request.query.get("state", "")
         if not code or not state:
             return web.Response(
-                text=_PAGE.format(cls="err", title="Missing parameters",
-                                  body="This page is reached from the /link command in Discord."),
-                content_type="text/html", status=400,
+                text=_PAGE.format(
+                    cls="err",
+                    title="Missing parameters",
+                    body="This page is reached from the /link command in Discord.",
+                ),
+                content_type="text/html",
+                status=400,
             )
         try:
             result = await auth.complete_link(code=code, state=state)
         except LinkError as exc:
             return web.Response(
                 text=_PAGE.format(cls="err", title="Linking failed", body=str(exc)),
-                content_type="text/html", status=400,
+                content_type="text/html",
+                status=400,
             )
         except Exception:
             log.exception("link completion failed")
             return web.Response(
-                text=_PAGE.format(cls="err", title="Linking failed",
-                                  body="Something went wrong. Run /link again in Discord."),
-                content_type="text/html", status=500,
+                text=_PAGE.format(
+                    cls="err",
+                    title="Linking failed",
+                    body="Something went wrong. Run /link again in Discord.",
+                ),
+                content_type="text/html",
+                status=500,
             )
         if on_linked is not None:
             try:
@@ -60,9 +69,12 @@ def make_app(
             except Exception:
                 log.exception("on_linked notifier failed")
         return web.Response(
-            text=_PAGE.format(cls="ok", title="Account linked ✓",
-                              body=f"Linked as {result.spoo_email}. You can close this tab "
-                                   "and head back to Discord."),
+            text=_PAGE.format(
+                cls="ok",
+                title="Account linked ✓",
+                body=f"Linked as {result.spoo_email}. You can close this tab "
+                "and head back to Discord.",
+            ),
             content_type="text/html",
         )
 
@@ -90,11 +102,13 @@ def make_interaction_notifier(
         )
         payload = {
             "content": "",
-            "embeds": [{
-                "title": "Account linked ✓",
-                "description": f"Linked as **{result.spoo_email}**. Account commands are live — try `/links`.",
-                "color": 0x2ECC71,
-            }],
+            "embeds": [
+                {
+                    "title": "Account linked ✓",
+                    "description": f"Linked as **{result.spoo_email}**. Account commands are live — try `/links`.",
+                    "color": 0x2ECC71,
+                }
+            ],
             "components": [],
         }
         resp = await http.patch(url, json=payload)

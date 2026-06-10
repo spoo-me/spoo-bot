@@ -46,7 +46,10 @@ class Community(commands.Cog):
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot:
             return
-        if self.bot.user in message.mentions and message.type is not discord.MessageType.reply:
+        if (
+            self.bot.user in message.mentions
+            and message.type is not discord.MessageType.reply
+        ):
             embed = discord.Embed(
                 description="Hello! I'm SpooBot — I make your URLs spoo-tacular 😎\nUse **/help** to see what I can do.",
                 color=theme.PRIMARY,
@@ -68,7 +71,10 @@ class Community(commands.Cog):
             (cfg.channels.stats_shortlinks, f"🔗︱Links— {metrics.total_shortlinks:,}"),
         ):
             channel = self.bot.get_channel(int(channel_id))
-            if isinstance(channel, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel)):
+            if isinstance(
+                channel,
+                (discord.TextChannel, discord.VoiceChannel, discord.StageChannel),
+            ):
                 try:
                     await channel.edit(name=name)
                 except discord.HTTPException:

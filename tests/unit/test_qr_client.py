@@ -11,9 +11,13 @@ BASE = "https://qr.spoo.test"
 def _qr_with_recorder(captured: list[httpx.Request]) -> QrClient:
     def handler(request: httpx.Request) -> httpx.Response:
         captured.append(request)
-        return httpx.Response(200, content=b"\x89PNG fake", headers={"Content-Type": "image/png"})
+        return httpx.Response(
+            200, content=b"\x89PNG fake", headers={"Content-Type": "image/png"}
+        )
 
-    return QrClient(create_client(base_url=BASE, transport=httpx.MockTransport(handler)))
+    return QrClient(
+        create_client(base_url=BASE, transport=httpx.MockTransport(handler))
+    )
 
 
 async def test_gradient_png():

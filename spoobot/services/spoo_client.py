@@ -58,7 +58,9 @@ class SpooClient:
     @staticmethod
     def _require(token: str | None) -> str:
         if not token:
-            raise AuthRequiredError("this action requires a linked spoo.me account", status=401)
+            raise AuthRequiredError(
+                "this action requires a linked spoo.me account", status=401
+            )
         return token
 
     # ── shortening ───────────────────────────────────────────────────────
@@ -115,7 +117,11 @@ class SpooClient:
             body["max-clicks"] = max_clicks
         data = await self._json("POST", "/emoji", json=body)
         short_url = data.get("short_url", "")
-        return ShortUrl(alias=short_url.rstrip("/").split("/")[-1], short_url=short_url, long_url=long_url)
+        return ShortUrl(
+            alias=short_url.rstrip("/").split("/")[-1],
+            short_url=short_url,
+            long_url=long_url,
+        )
 
     # ── link management (auth required) ──────────────────────────────────
 
@@ -143,13 +149,18 @@ class SpooClient:
 
     async def update_url(self, token: str, url_id: str, **fields: Any) -> UrlListItem:
         self._require(token)
-        data = await self._json("PATCH", f"/api/v1/urls/{url_id}", token=token, json=fields)
+        data = await self._json(
+            "PATCH", f"/api/v1/urls/{url_id}", token=token, json=fields
+        )
         return UrlListItem.model_validate(data)
 
     async def set_url_status(self, token: str, url_id: str, status: str) -> UrlListItem:
         self._require(token)
         data = await self._json(
-            "PATCH", f"/api/v1/urls/{url_id}/status", token=token, json={"status": status}
+            "PATCH",
+            f"/api/v1/urls/{url_id}/status",
+            token=token,
+            json={"status": status},
         )
         return UrlListItem.model_validate(data)
 
@@ -195,7 +206,9 @@ class SpooClient:
         params: dict[str, Any] = {"scope": scope, "format": fmt}
         if short_code:
             params["short_code"] = short_code
-        resp = await self._http.get("/api/v1/export", params=params, headers=self._headers(token))
+        resp = await self._http.get(
+            "/api/v1/export", params=params, headers=self._headers(token)
+        )
         raise_for_status_mapped(resp)
         dispo = resp.headers.get("Content-Disposition", "")
         filename = "export"
@@ -215,7 +228,9 @@ class SpooClient:
         return DeviceTokenGrant.model_validate(data)
 
     async def refresh_device_tokens(self, refresh_token: str) -> TokenPair:
-        data = await self._json("POST", "/auth/device/refresh", json={"refresh_token": refresh_token})
+        data = await self._json(
+            "POST", "/auth/device/refresh", json={"refresh_token": refresh_token}
+        )
         return TokenPair.model_validate(data)
 
     # ── site metrics ─────────────────────────────────────────────────────

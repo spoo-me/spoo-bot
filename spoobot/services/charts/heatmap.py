@@ -31,7 +31,9 @@ def build_country_css(counts: dict[str, int]) -> str:
     return "\n".join(rules)
 
 
-def render_heatmap_png(counts: dict[str, int], *, svg_path: str | Path, width: int = 1400) -> bytes:
+def render_heatmap_png(
+    counts: dict[str, int], *, svg_path: str | Path, width: int = 1400
+) -> bytes:
     svg = Path(svg_path).read_text(encoding="utf-8")
     css = build_country_css(counts)
     # Inject a <style> block right after the opening <svg ...> tag.

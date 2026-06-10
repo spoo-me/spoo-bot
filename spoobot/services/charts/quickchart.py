@@ -43,8 +43,12 @@ def build_chart_config(
         "data": {"labels": labels, "datasets": ds},
         "options": {
             "plugins": {
-                "title": {"display": True, "text": title, "color": TEXT,
-                          "font": {"size": 20, "weight": "bold"}},
+                "title": {
+                    "display": True,
+                    "text": title,
+                    "color": TEXT,
+                    "font": {"size": 20, "weight": "bold"},
+                },
                 "legend": {"labels": {"color": TEXT}},
             },
             "scales": {"x": axis, "y": axis},
@@ -84,18 +88,26 @@ class QuickChartRenderer:
         if unique:
             datasets.append(("Unique clicks", [v for _, v in unique]))
         return await self._render(
-            build_chart_config(kind="line", title=title, labels=labels, datasets=datasets)
+            build_chart_config(
+                kind="line", title=title, labels=labels, datasets=datasets
+            )
         )
 
     async def breakdown(self, title: str, rows: list[tuple[str, int]]) -> bytes:
         labels = [label for label, _ in rows]
         return await self._render(
-            build_chart_config(kind="bar", title=title, labels=labels,
-                               datasets=[("Clicks", [v for _, v in rows])])
+            build_chart_config(
+                kind="bar",
+                title=title,
+                labels=labels,
+                datasets=[("Clicks", [v for _, v in rows])],
+            )
         )
 
     async def country_heatmap(self, counts: dict[str, int]) -> bytes:
-        return await asyncio.to_thread(render_heatmap_png, counts, svg_path=self._svg_path)
+        return await asyncio.to_thread(
+            render_heatmap_png, counts, svg_path=self._svg_path
+        )
 
     async def close(self) -> None:
         return None

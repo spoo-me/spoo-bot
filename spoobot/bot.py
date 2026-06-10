@@ -40,7 +40,7 @@ COGS = (
 
 def make_intents() -> discord.Intents:
     intents = discord.Intents.default()
-    intents.members = True          # welcome messages
+    intents.members = True  # welcome messages
     intents.message_content = True  # prefix commands ($sync, $ping)
     return intents
 
@@ -126,7 +126,9 @@ class SpooBot(commands.Bot):
             assert self.application_id is not None, "application_id missing after login"
             app = make_app(
                 self._auth,
-                on_linked=make_interaction_notifier(self.application_id, self._http_misc),
+                on_linked=make_interaction_notifier(
+                    self.application_id, self._http_misc
+                ),
             )
             self._web_runner = web.AppRunner(app)
             await self._web_runner.setup()
@@ -167,13 +169,21 @@ class SpooBot(commands.Bot):
         elif isinstance(original, GrantRevokedError):
             embed = embeds.relink_embed()
         elif isinstance(original, RateLimitedError):
-            after = f" Try again in ~{int(original.retry_after)}s." if original.retry_after else ""
-            embed = embeds.error_embed("Rate limited", f"spoo.me told us to slow down.{after}")
+            after = (
+                f" Try again in ~{int(original.retry_after)}s."
+                if original.retry_after
+                else ""
+            )
+            embed = embeds.error_embed(
+                "Rate limited", f"spoo.me told us to slow down.{after}"
+            )
         elif isinstance(original, SpooApiError):
             embed = embeds.error_embed("spoo.me error", str(original))
         else:
             log.exception("unhandled command error", exc_info=original)
-            embed = embeds.error_embed("Something broke", "Unexpected error — the team has the logs.")
+            embed = embeds.error_embed(
+                "Something broke", "Unexpected error — the team has the logs."
+            )
 
         if interaction.response.is_done():
             await interaction.followup.send(embed=embed, ephemeral=True)

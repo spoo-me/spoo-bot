@@ -30,7 +30,9 @@ class ShortenResultView(discord.ui.LayoutView):
         requested_by: discord.abc.User,
     ) -> None:
         super().__init__(timeout=None)
-        header = "### 🔗 URL shortened" + ("  ·  saved to your account" if owned else "")
+        header = "### 🔗 URL shortened" + (
+            "  ·  saved to your account" if owned else ""
+        )
         body = (
             f"**Short URL**\n{result.short_url}\n\n"
             f"**Destination**\n{result.long_url[:200]}"
@@ -46,7 +48,9 @@ class ShortenResultView(discord.ui.LayoutView):
         container.add_item(discord.ui.Separator())
         stats_row = discord.ui.ActionRow()
         stats_row.add_item(
-            discord.ui.Button(label="View Statistics", url=f"{base_url}/stats/{result.alias}")
+            discord.ui.Button(
+                label="View Statistics", url=f"{base_url}/stats/{result.alias}"
+            )
         )
         container.add_item(stats_row)
         share_row = discord.ui.ActionRow()

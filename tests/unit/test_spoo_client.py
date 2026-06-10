@@ -19,7 +19,9 @@ class FakeApi:
         self.routes: dict[tuple[str, str], httpx.Response] = {}
         self.requests: list[httpx.Request] = []
 
-    def on(self, method: str, path: str, *, status: int = 200, body: dict | None = None) -> None:
+    def on(
+        self, method: str, path: str, *, status: int = 200, body: dict | None = None
+    ) -> None:
         self.routes[(method, path)] = httpx.Response(status, json=body or {})
 
     def handler(self, request: httpx.Request) -> httpx.Response:
@@ -43,10 +45,18 @@ async def client(api):
 
 
 async def test_shorten_anon(client, api):
-    api.on("POST", "/api/v1/shorten", status=201, body={
-        "alias": "abc", "short_url": f"{BASE}/abc", "long_url": "https://example.com",
-        "created_at": 1704067200, "status": "ACTIVE",
-    })
+    api.on(
+        "POST",
+        "/api/v1/shorten",
+        status=201,
+        body={
+            "alias": "abc",
+            "short_url": f"{BASE}/abc",
+            "long_url": "https://example.com",
+            "created_at": 1704067200,
+            "status": "ACTIVE",
+        },
+    )
     result = await client.shorten("https://example.com")
     assert result.alias == "abc"
     assert result.short_url.endswith("/abc")
@@ -55,17 +65,31 @@ async def test_shorten_anon(client, api):
 
 
 async def test_shorten_sends_bearer_when_token_given(client, api):
-    api.on("POST", "/api/v1/shorten", status=201, body={
-        "alias": "x", "short_url": f"{BASE}/x", "long_url": "https://e.com",
-    })
+    api.on(
+        "POST",
+        "/api/v1/shorten",
+        status=201,
+        body={
+            "alias": "x",
+            "short_url": f"{BASE}/x",
+            "long_url": "https://e.com",
+        },
+    )
     await client.shorten("https://e.com", token="tok-1")
     assert api.requests[0].headers["Authorization"] == "Bearer tok-1"
 
 
 async def test_shorten_anon_sends_no_auth_header(client, api):
-    api.on("POST", "/api/v1/shorten", status=201, body={
-        "alias": "x", "short_url": f"{BASE}/x", "long_url": "https://e.com",
-    })
+    api.on(
+        "POST",
+        "/api/v1/shorten",
+        status=201,
+        body={
+            "alias": "x",
+            "short_url": f"{BASE}/x",
+            "long_url": "https://e.com",
+        },
+    )
     await client.shorten("https://e.com")
     assert "Authorization" not in api.requests[0].headers
 
@@ -77,10 +101,17 @@ async def test_taken_alias_maps_to_validation_error(client, api):
 
 
 async def test_list_urls_parses_camel_case(client, api):
-    api.on("GET", "/api/v1/urls", body={
-        "items": [{"id": "a" * 24, "alias": "x", "long_url": "https://e.com"}],
-        "page": 1, "pageSize": 10, "total": 1, "hasNext": False,
-    })
+    api.on(
+        "GET",
+        "/api/v1/urls",
+        body={
+            "items": [{"id": "a" * 24, "alias": "x", "long_url": "https://e.com"}],
+            "page": 1,
+            "pageSize": 10,
+            "total": 1,
+            "hasNext": False,
+        },
+    )
     page = await client.list_urls("tok", page=1, page_size=10)
     assert page.has_next is False and page.items[0].alias == "x"
     q = dict(api.requests[0].url.params)
@@ -93,13 +124,29 @@ async def test_list_urls_requires_token(client):
 
 
 async def test_stats_series_helper(client, api):
-    api.on("GET", "/api/v1/stats", body={
-        "scope": "anon", "group_by": ["browser"], "timezone": "UTC",
-        "summary": {"total_clicks": 5, "unique_clicks": 3, "avg_redirection_time": 1.0},
-        "metrics": {"clicks_by_browser": [{"browser": "Chrome", "clicks": 5, "clicks_percentage": 100.0}]},
-        "short_code": "abc",
-    })
-    res = await client.stats(scope="anon", short_code="abc", group_by=["browser"], metrics=["clicks"])
+    api.on(
+        "GET",
+        "/api/v1/stats",
+        body={
+            "scope": "anon",
+            "group_by": ["browser"],
+            "timezone": "UTC",
+            "summary": {
+                "total_clicks": 5,
+                "unique_clicks": 3,
+                "avg_redirection_time": 1.0,
+            },
+            "metrics": {
+                "clicks_by_browser": [
+                    {"browser": "Chrome", "clicks": 5, "clicks_percentage": 100.0}
+                ]
+            },
+            "short_code": "abc",
+        },
+    )
+    res = await client.stats(
+        scope="anon", short_code="abc", group_by=["browser"], metrics=["clicks"]
+    )
     assert res.series("clicks", "browser") == [("Chrome", 5)]
 
 

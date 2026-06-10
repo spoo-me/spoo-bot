@@ -39,8 +39,14 @@ LANGUAGES: dict[str, tuple[str, str]] = {
 }
 
 
-def render_snippet(language: str, *, url: str, alias: str | None,
-                   password: str | None, max_clicks: int | None) -> tuple[str, str]:
+def render_snippet(
+    language: str,
+    *,
+    url: str,
+    alias: str | None,
+    password: str | None,
+    max_clicks: int | None,
+) -> tuple[str, str]:
     """Returns (code, md_tag). Raises KeyError for unknown language."""
     stem, tag = LANGUAGES[language]
     raw = (TEMPLATE_DIR / f"{stem}.tmpl").read_text(encoding="utf-8")
@@ -57,11 +63,17 @@ class GetCode(commands.Cog):
     def __init__(self, bot: SpooBot) -> None:
         self.bot = bot
 
-    @app_commands.command(name="get-code", description="API code snippet for your language 🧑🏻‍💻")
-    @app_commands.describe(language="Programming language", url="URL to shorten in the snippet")
-    @app_commands.choices(language=[
-        app_commands.Choice(name=name, value=name) for name in sorted(LANGUAGES)
-    ])
+    @app_commands.command(
+        name="get-code", description="API code snippet for your language 🧑🏻‍💻"
+    )
+    @app_commands.describe(
+        language="Programming language", url="URL to shorten in the snippet"
+    )
+    @app_commands.choices(
+        language=[
+            app_commands.Choice(name=name, value=name) for name in sorted(LANGUAGES)
+        ]
+    )
     async def get_code(
         self,
         interaction: discord.Interaction,
@@ -72,7 +84,11 @@ class GetCode(commands.Cog):
         max_clicks: int | None = None,
     ) -> None:
         code, tag = render_snippet(
-            language.value, url=url, alias=alias, password=password, max_clicks=max_clicks
+            language.value,
+            url=url,
+            alias=alias,
+            password=password,
+            max_clicks=max_clicks,
         )
         body = f"```{tag}\n{code}\n```"
         embed = discord.Embed(

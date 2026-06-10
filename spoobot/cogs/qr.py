@@ -23,10 +23,12 @@ class QrCog(commands.Cog):
         style="QR style",
         color="Foreground color (hex or name, classic style only)",
     )
-    @app_commands.choices(style=[
-        app_commands.Choice(name="Gradient (brand)", value="gradient"),
-        app_commands.Choice(name="Classic", value="classic"),
-    ])
+    @app_commands.choices(
+        style=[
+            app_commands.Choice(name="Gradient (brand)", value="gradient"),
+            app_commands.Choice(name="Classic", value="classic"),
+        ]
+    )
     async def qr(
         self,
         interaction: discord.Interaction,

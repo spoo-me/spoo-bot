@@ -54,7 +54,11 @@ class Shorten(commands.Cog):
             result = await self.bot.auth.authed_call(
                 user_id,
                 lambda token: self.bot.spoo.shorten(
-                    long_url, alias=alias, max_clicks=max_clicks, password=password, token=token
+                    long_url,
+                    alias=alias,
+                    max_clicks=max_clicks,
+                    password=password,
+                    token=token,
                 ),
             )
             return result, True
@@ -84,9 +88,15 @@ class Shorten(commands.Cog):
     ) -> None:
         await interaction.response.defer()
         result, owned = await self._shorten_two_tier(
-            interaction.user.id, long_url=url, alias=alias, max_clicks=max_clicks, password=password
+            interaction.user.id,
+            long_url=url,
+            alias=alias,
+            max_clicks=max_clicks,
+            password=password,
         )
-        await interaction.followup.send(view=self._result_view(interaction, result, owned=owned))
+        await interaction.followup.send(
+            view=self._result_view(interaction, result, owned=owned)
+        )
 
     @app_commands.command(name="emojify", description="Convert long URLs to emojis 😉")
     @app_commands.describe(
@@ -111,7 +121,9 @@ class Shorten(commands.Cog):
         result = await self.bot.spoo.emojify(
             url, emojies=emojies, max_clicks=max_clicks, password=password
         )
-        await interaction.followup.send(view=self._result_view(interaction, result, owned=False))
+        await interaction.followup.send(
+            view=self._result_view(interaction, result, owned=False)
+        )
 
 
 async def setup(bot: SpooBot) -> None:

@@ -35,12 +35,24 @@ class FakeClient:
 
 @pytest.fixture
 async def svc(tmp_path):
-    vault = TokenVault(tmp_path / "v.sqlite3", TokenCipher(Fernet.generate_key().decode()))
+    vault = TokenVault(
+        tmp_path / "v.sqlite3", TokenCipher(Fernet.generate_key().decode())
+    )
     await vault.init()
     client = FakeClient()
-    yield AuthService(client, vault, state_secret=SECRET, app_id="spoo-discord",
-                      spoo_base="https://spoo.test", callback_url="https://cb.test/callback",
-                      link_ttl_seconds=600), client, vault
+    yield (
+        AuthService(
+            client,
+            vault,
+            state_secret=SECRET,
+            app_id="spoo-discord",
+            spoo_base="https://spoo.test",
+            callback_url="https://cb.test/callback",
+            link_ttl_seconds=600,
+        ),
+        client,
+        vault,
+    )
     await vault.close()
 
 
@@ -78,7 +90,9 @@ async def test_complete_link_replayed_state_rejected(svc):
 
 async def test_authed_call_refreshes_once_on_401(svc):
     service, client, vault = svc
-    await vault.put(1, TokenPair(access_token="stale", refresh_token="ref"), spoo_email="e")
+    await vault.put(
+        1, TokenPair(access_token="stale", refresh_token="ref"), spoo_email="e"
+    )
     calls = []
 
     async def api_call(token: str) -> str:
@@ -96,7 +110,9 @@ async def test_authed_call_refreshes_once_on_401(svc):
 
 async def test_authed_call_revoked_grant_clears_vault(svc):
     service, client, vault = svc
-    await vault.put(1, TokenPair(access_token="stale", refresh_token="ref"), spoo_email="e")
+    await vault.put(
+        1, TokenPair(access_token="stale", refresh_token="ref"), spoo_email="e"
+    )
     client.refresh_raises = AuthRequiredError("app access has been revoked", status=401)
 
     async def api_call(token: str) -> str:

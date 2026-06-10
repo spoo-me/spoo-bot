@@ -24,8 +24,11 @@ class StatsCog(commands.Cog):
         self, short_code: str, password: str | None, group_by: list[str]
     ) -> StatsResult:
         return await self.bot.spoo.stats(
-            scope="anon", short_code=short_code, password=password,
-            group_by=group_by, metrics=["clicks", "unique_clicks"],
+            scope="anon",
+            short_code=short_code,
+            password=password,
+            group_by=group_by,
+            metrics=["clicks", "unique_clicks"],
         )
 
     @app_commands.command(name="stats", description="View short URL statistics 📊")
@@ -35,7 +38,10 @@ class StatsCog(commands.Cog):
     )
     @app_commands.checks.cooldown(5, 60)
     async def stats(
-        self, interaction: discord.Interaction, short_code: str, password: str | None = None
+        self,
+        interaction: discord.Interaction,
+        short_code: str,
+        password: str | None = None,
     ) -> None:
         await interaction.response.defer()
         result = await self.fetch(short_code, password, ["time"])
@@ -77,8 +83,10 @@ class StatsCog(commands.Cog):
             )
         except Exception:
             return []
-        return [app_commands.Choice(name=f"{u.alias} → {u.long_url[:60]}", value=u.alias)
-                for u in page.items][:25]
+        return [
+            app_commands.Choice(name=f"{u.alias} → {u.long_url[:60]}", value=u.alias)
+            for u in page.items
+        ][:25]
 
 
 class DimensionRow(discord.ui.ActionRow["StatsOverviewView"]):
@@ -92,7 +100,9 @@ class DimensionRow(discord.ui.ActionRow["StatsOverviewView"]):
         placeholder="Explore a dimension…",
         options=[discord.SelectOption(label=d.title(), value=d) for d in DIMENSIONS],
     )
-    async def pick(self, interaction: discord.Interaction, select: discord.ui.Select) -> None:
+    async def pick(
+        self, interaction: discord.Interaction, select: discord.ui.Select
+    ) -> None:
         await interaction.response.defer()
         dim = select.values[0]
         result = await self.cog.fetch(self.short_code, self.password, [dim])
@@ -100,11 +110,15 @@ class DimensionRow(discord.ui.ActionRow["StatsOverviewView"]):
         if dim == "country":
             png = await self.cog.bot.charts.country_heatmap(dict(rows))
         else:
-            png = await self.cog.bot.charts.breakdown(f"{dim.title()} — {self.short_code}", rows)
-        gallery_view = ChartGalleryView(title=f"{dim.title()} — spoo.me/{self.short_code}",
-                                        filename=f"{dim}.png")
+            png = await self.cog.bot.charts.breakdown(
+                f"{dim.title()} — {self.short_code}", rows
+            )
+        gallery_view = ChartGalleryView(
+            title=f"{dim.title()} — spoo.me/{self.short_code}", filename=f"{dim}.png"
+        )
         await interaction.followup.send(
-            view=gallery_view, files=[discord.File(io.BytesIO(png), filename=f"{dim}.png")]
+            view=gallery_view,
+            files=[discord.File(io.BytesIO(png), filename=f"{dim}.png")],
         )
 
 
@@ -116,7 +130,9 @@ class ChartGalleryView(discord.ui.LayoutView):
         container = discord.ui.Container(accent_colour=discord.Colour(theme.PRIMARY))
         container.add_item(discord.ui.TextDisplay(f"### {title}"))
         container.add_item(
-            discord.ui.MediaGallery(discord.MediaGalleryItem(media=f"attachment://{filename}"))
+            discord.ui.MediaGallery(
+                discord.MediaGalleryItem(media=f"attachment://{filename}")
+            )
         )
         self.add_item(container)
 
@@ -157,10 +173,14 @@ class StatsOverviewView(discord.ui.LayoutView):
         container.add_item(DimensionRow(cog, short_code, password))
         link_row = discord.ui.ActionRow()
         link_row.add_item(
-            discord.ui.Button(label="Full analytics on spoo.me", url=f"{base_url}/stats/{short_code}")
+            discord.ui.Button(
+                label="Full analytics on spoo.me", url=f"{base_url}/stats/{short_code}"
+            )
         )
         container.add_item(link_row)
-        container.add_item(discord.ui.TextDisplay(f"-# Requested by {requested_by.name}"))
+        container.add_item(
+            discord.ui.TextDisplay(f"-# Requested by {requested_by.name}")
+        )
         self.add_item(container)
 
 

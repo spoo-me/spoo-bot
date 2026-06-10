@@ -13,16 +13,25 @@ from spoobot.errors import (
 from spoobot.infrastructure.http import create_client, raise_for_status_mapped
 
 
-def _client(status: int, body: dict | None = None, headers: dict | None = None) -> httpx.AsyncClient:
+def _client(
+    status: int, body: dict | None = None, headers: dict | None = None
+) -> httpx.AsyncClient:
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(status, json=body or {}, headers=headers or {})
 
-    return create_client(base_url="https://t.test", transport=httpx.MockTransport(handler))
+    return create_client(
+        base_url="https://t.test", transport=httpx.MockTransport(handler)
+    )
 
 
 @pytest.mark.parametrize(
     "status,exc",
-    [(400, ApiValidationError), (401, AuthRequiredError), (404, NotFoundError), (500, ServerError)],
+    [
+        (400, ApiValidationError),
+        (401, AuthRequiredError),
+        (404, NotFoundError),
+        (500, ServerError),
+    ],
 )
 async def test_status_mapping(status, exc):
     async with _client(status, {"message": "boom"}) as client:
@@ -52,6 +61,8 @@ async def test_user_agent_header():
         captured["ua"] = request.headers.get("User-Agent", "")
         return httpx.Response(200, json={})
 
-    async with create_client(base_url="https://t.test", transport=httpx.MockTransport(handler)) as client:
+    async with create_client(
+        base_url="https://t.test", transport=httpx.MockTransport(handler)
+    ) as client:
         await client.get("/")
     assert captured["ua"].startswith("spoo-bot/2.0")

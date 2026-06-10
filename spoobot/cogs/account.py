@@ -48,7 +48,9 @@ class Account(commands.Cog):
         # The callback server edits this message in place on success
         # (web/server.py make_interaction_notifier).
 
-    @app_commands.command(name="unlink", description="Disconnect your spoo.me account 🔓")
+    @app_commands.command(
+        name="unlink", description="Disconnect your spoo.me account 🔓"
+    )
     @require_link()
     async def unlink(self, interaction: discord.Interaction) -> None:
         await self.bot.auth.unlink(interaction.user.id)
@@ -62,11 +64,15 @@ class Account(commands.Cog):
         )
         await interaction.response.send_message(
             embed=embed,
-            view=LinkButtonView(self.bot.config.urls.dashboard_apps, label="Open spoo.me dashboard"),
+            view=LinkButtonView(
+                self.bot.config.urls.dashboard_apps, label="Open spoo.me dashboard"
+            ),
             ephemeral=True,
         )
 
-    @app_commands.command(name="whoami", description="Show the linked spoo.me account 👤")
+    @app_commands.command(
+        name="whoami", description="Show the linked spoo.me account 👤"
+    )
     @require_link()
     async def whoami(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer(ephemeral=True)
@@ -74,8 +80,12 @@ class Account(commands.Cog):
         embed = discord.Embed(title="Linked spoo.me account", color=theme.PRIMARY)
         embed.add_field(name="Email", value=f"```{profile.email}```", inline=False)
         embed.add_field(name="Plan", value=f"```{profile.plan}```", inline=True)
-        embed.add_field(name="Verified", value=f"```{profile.email_verified}```", inline=True)
-        await interaction.followup.send(embed=embeds.user_footer(embed, interaction.user), ephemeral=True)
+        embed.add_field(
+            name="Verified", value=f"```{profile.email_verified}```", inline=True
+        )
+        await interaction.followup.send(
+            embed=embeds.user_footer(embed, interaction.user), ephemeral=True
+        )
 
 
 async def setup(bot: SpooBot) -> None:

@@ -34,7 +34,6 @@ pythonpath = ["."]
 
 [tool.ruff]
 target-version = "py312"
-extend-exclude = ["main.py", "api.py", "utils.py", "utils_code.py", "cogs", "schemas", "config.py"]
 
 [tool.pyright]
 include = ["spoobot", "tests", "scripts"]

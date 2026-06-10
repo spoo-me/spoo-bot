@@ -5,7 +5,10 @@ from spoobot.services.charts.quickchart import build_chart_config
 
 def test_timeseries_config_is_dark_line_chart():
     cfg = build_chart_config(
-        kind="line", title="Clicks", labels=["Mon", "Tue"], datasets=[("Clicks", [3, 5])]
+        kind="line",
+        title="Clicks",
+        labels=["Mon", "Tue"],
+        datasets=[("Clicks", [3, 5])],
     )
     assert cfg["type"] == "line"
     assert cfg["data"]["labels"] == ["Mon", "Tue"]

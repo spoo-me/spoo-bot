@@ -55,7 +55,9 @@ class AuthService:
 
     async def begin_link(self, *, discord_user_id: int, interaction_token: str) -> str:
         """Mint state, persist the pending session, return the consent URL."""
-        state = make_state(self._secret, discord_user_id=discord_user_id, ttl_seconds=self._ttl)
+        state = make_state(
+            self._secret, discord_user_id=discord_user_id, ttl_seconds=self._ttl
+        )
         nonce = state.split(".")[0]
         await self._vault.create_link_session(
             nonce, discord_user_id=discord_user_id, interaction_token=interaction_token
@@ -72,7 +74,9 @@ class AuthService:
         except StateError as exc:
             raise LinkError(f"invalid link state: {exc}") from exc
 
-        session: LinkSession | None = await self._vault.consume_link_session(parsed.nonce)
+        session: LinkSession | None = await self._vault.consume_link_session(
+            parsed.nonce
+        )
         if session is None or session.discord_user_id != parsed.discord_user_id:
             raise LinkError("unknown or already-used link session")
 
@@ -80,7 +84,9 @@ class AuthService:
         email = grant.user.email if grant.user else ""
         await self._vault.put(
             parsed.discord_user_id,
-            TokenPair(access_token=grant.access_token, refresh_token=grant.refresh_token),
+            TokenPair(
+                access_token=grant.access_token, refresh_token=grant.refresh_token
+            ),
             spoo_email=email,
         )
         log.info("account linked discord_user_id=%s", parsed.discord_user_id)

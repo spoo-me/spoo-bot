@@ -67,7 +67,9 @@ class TokenVault:
 
     # ── linked accounts ──────────────────────────────────────────────────
 
-    async def put(self, discord_user_id: int, pair: TokenPair, *, spoo_email: str) -> None:
+    async def put(
+        self, discord_user_id: int, pair: TokenPair, *, spoo_email: str
+    ) -> None:
         await self.db.execute(
             """INSERT INTO linked_accounts (discord_user_id, access_token, refresh_token, spoo_email)
                VALUES (?, ?, ?, ?)
@@ -130,4 +132,6 @@ class TokenVault:
             return None
         await self.db.execute("DELETE FROM link_sessions WHERE nonce = ?", (nonce,))
         await self.db.commit()
-        return LinkSession(nonce=nonce, discord_user_id=row[0], interaction_token=row[1])
+        return LinkSession(
+            nonce=nonce, discord_user_id=row[0], interaction_token=row[1]
+        )
