@@ -1,0 +1,15 @@
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
+
+var payload = new Dictionary<string, object> { ["long_url"] = "$url" };
+// Optional extras — delete what you don't need:
+if ("$alias" != "") payload["alias"] = "$alias";
+if ("$password" != "") payload["password"] = "$password";
+if ("$max_clicks" != "") payload["max_clicks"] = int.Parse("$max_clicks");
+
+var client = new HttpClient();
+// client.DefaultRequestHeaders.Authorization = new("Bearer", "<YOUR_API_KEY>"); // higher limits
+var response = await client.PostAsJsonAsync("https://spoo.me/api/v1/shorten", payload);
+var body = await response.Content.ReadAsStringAsync();
+Console.WriteLine(JsonDocument.Parse(body).RootElement.GetProperty("short_url"));

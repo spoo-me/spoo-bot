@@ -1,0 +1,27 @@
+#include <curl/curl.h>
+#include <stdio.h>
+
+int main(void) {
+    /* Remove the optional fields you don't need: */
+    const char *payload =
+        "{\"long_url\": \"$url\", \"alias\": \"$alias\", \"password\": \"$password\"}";
+
+    CURL *curl = curl_easy_init();
+    if (!curl) return 1;
+
+    struct curl_slist *headers = NULL;
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    /* headers = curl_slist_append(headers, "Authorization: Bearer <YOUR_API_KEY>"); */
+
+    curl_easy_setopt(curl, CURLOPT_URL, "https://spoo.me/api/v1/shorten");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload);
+
+    CURLcode res = curl_easy_perform(curl);
+    if (res != CURLE_OK)
+        fprintf(stderr, "request failed: %s\n", curl_easy_strerror(res));
+
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+    return 0;
+}

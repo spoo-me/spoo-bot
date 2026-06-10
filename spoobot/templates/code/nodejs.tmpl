@@ -1,0 +1,14 @@
+const axios = require("axios");
+
+const payload = { long_url: "$url" };
+// Optional extras — delete what you don't need:
+if ("$alias") payload.alias = "$alias";
+if ("$password") payload.password = "$password";
+if ("$max_clicks") payload.max_clicks = Number("$max_clicks");
+
+axios
+  .post("https://spoo.me/api/v1/shorten", payload, {
+    // headers: { Authorization: "Bearer <YOUR_API_KEY>" }, // higher limits
+  })
+  .then((response) => console.log(response.data.short_url))
+  .catch((error) => console.error(error.response?.data ?? error.message));

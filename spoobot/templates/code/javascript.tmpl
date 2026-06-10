@@ -1,0 +1,16 @@
+const payload = { long_url: "$url" };
+// Optional extras — delete what you don't need:
+if ("$alias") payload.alias = "$alias";
+if ("$password") payload.password = "$password";
+if ("$max_clicks") payload.max_clicks = Number("$max_clicks");
+
+const response = await fetch("https://spoo.me/api/v1/shorten", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    // Authorization: "Bearer <YOUR_API_KEY>", // higher limits
+  },
+  body: JSON.stringify(payload),
+});
+const data = await response.json();
+console.log(data.short_url);

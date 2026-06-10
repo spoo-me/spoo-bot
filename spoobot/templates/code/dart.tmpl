@@ -1,0 +1,21 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+
+Future<void> main() async {
+  final payload = <String, dynamic>{'long_url': '$url'};
+  // Optional extras — delete what you don't need:
+  if ('$alias'.isNotEmpty) payload['alias'] = '$alias';
+  if ('$password'.isNotEmpty) payload['password'] = '$password';
+  if ('$max_clicks'.isNotEmpty) payload['max_clicks'] = int.parse('$max_clicks');
+
+  final response = await http.post(
+    Uri.parse('https://spoo.me/api/v1/shorten'),
+    headers: {
+      'Content-Type': 'application/json',
+      // 'Authorization': 'Bearer <YOUR_API_KEY>', // higher limits
+    },
+    body: jsonEncode(payload),
+  );
+  print(jsonDecode(response.body)['short_url']);
+}

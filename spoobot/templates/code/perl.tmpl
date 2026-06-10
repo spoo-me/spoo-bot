@@ -1,0 +1,23 @@
+use strict;
+use warnings;
+use HTTP::Request;
+use JSON::PP qw(encode_json decode_json);
+use LWP::UserAgent;
+
+# Optional extras — delete what you don't need:
+my %payload = (long_url => "$url");
+$payload{alias} = "$alias" if "$alias";
+$payload{password} = "$password" if "$password";
+$payload{max_clicks} = 0 + "$max_clicks" if "$max_clicks";
+
+my $request = HTTP::Request->new(
+    POST => "https://spoo.me/api/v1/shorten",
+    [
+        "Content-Type" => "application/json",
+        # "Authorization" => "Bearer <YOUR_API_KEY>",  # higher limits
+    ],
+    encode_json(\%payload),
+);
+
+my $response = LWP::UserAgent->new->request($request);
+print decode_json($response->content)->{short_url}, "\n";

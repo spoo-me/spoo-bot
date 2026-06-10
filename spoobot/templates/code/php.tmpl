@@ -1,0 +1,25 @@
+<?php
+
+// Optional extras — delete what you don't need:
+$payload = array_filter([
+    "long_url" => "$url",
+    "alias" => "$alias",
+    "password" => "$password",
+    "max_clicks" => "$max_clicks" === "" ? null : (int) "$max_clicks",
+]);
+
+$ch = curl_init("https://spoo.me/api/v1/shorten");
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode($payload),
+    CURLOPT_HTTPHEADER => [
+        "Content-Type: application/json",
+        // "Authorization: Bearer <YOUR_API_KEY>", // higher limits
+    ],
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+echo json_decode($response, true)["short_url"] . PHP_EOL;

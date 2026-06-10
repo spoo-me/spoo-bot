@@ -1,0 +1,16 @@
+(require '[clj-http.client :as client])
+
+;; Optional extras — remove the keys you don't need:
+(def payload
+  (into {:long_url "$url"}
+        (remove (comp empty? val)
+                {:alias "$alias" :password "$password" :max_clicks "$max_clicks"})))
+
+(println
+ (get-in (client/post "https://spoo.me/api/v1/shorten"
+                      {:form-params payload
+                       :content-type :json
+                       :as :json
+                       ;; :oauth-token "<YOUR_API_KEY>" ; higher limits
+                       })
+         [:body :short_url]))

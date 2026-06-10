@@ -1,0 +1,25 @@
+use reqwest::blocking::Client;
+use serde_json::{json, Value};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut payload = json!({ "long_url": "$url" });
+    // Optional extras — delete what you don't need:
+    if !"$alias".is_empty() {
+        payload["alias"] = json!("$alias");
+    }
+    if !"$password".is_empty() {
+        payload["password"] = json!("$password");
+    }
+    if !"$max_clicks".is_empty() {
+        payload["max_clicks"] = json!("$max_clicks".parse::<u32>()?);
+    }
+
+    let response: Value = Client::new()
+        .post("https://spoo.me/api/v1/shorten")
+        // .bearer_auth("<YOUR_API_KEY>") // higher limits
+        .json(&payload)
+        .send()?
+        .json()?;
+    println!("{}", response["short_url"]);
+    Ok(())
+}

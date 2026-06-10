@@ -1,0 +1,16 @@
+library(httr)
+
+payload <- list(long_url = "$url")
+# Optional extras — delete what you don't need:
+if (nzchar("$alias")) payload[["alias"]] <- "$alias"
+if (nzchar("$password")) payload[["password"]] <- "$password"
+if (nzchar("$max_clicks")) payload[["max_clicks"]] <- as.integer("$max_clicks")
+
+response <- POST(
+  "https://spoo.me/api/v1/shorten",
+  body = payload,
+  encode = "json"
+  # , add_headers(Authorization = "Bearer <YOUR_API_KEY>")  # higher limits
+)
+
+print(content(response)[["short_url"]])

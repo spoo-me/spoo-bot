@@ -1,0 +1,14 @@
+import requests
+
+payload = {"long_url": "$url"}
+# Optional extras — delete what you don't need:
+if "$alias": payload["alias"] = "$alias"
+if "$password": payload["password"] = "$password"
+if "$max_clicks": payload["max_clicks"] = int("$max_clicks" or 0)
+
+resp = requests.post(
+    "https://spoo.me/api/v1/shorten",
+    json=payload,
+    # headers={"Authorization": "Bearer <YOUR_API_KEY>"},  # higher limits
+)
+print(resp.json()["short_url"])

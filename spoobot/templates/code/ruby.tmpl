@@ -1,0 +1,20 @@
+require "json"
+require "net/http"
+require "uri"
+
+payload = { long_url: "$url" }
+# Optional extras — delete what you don't need:
+payload[:alias] = "$alias" unless "$alias".empty?
+payload[:password] = "$password" unless "$password".empty?
+payload[:max_clicks] = "$max_clicks".to_i unless "$max_clicks".empty?
+
+uri = URI("https://spoo.me/api/v1/shorten")
+http = Net::HTTP.new(uri.host, uri.port)
+http.use_ssl = true
+
+request = Net::HTTP::Post.new(uri, "Content-Type" => "application/json")
+# request["Authorization"] = "Bearer <YOUR_API_KEY>" # higher limits
+request.body = payload.to_json
+
+response = http.request(request)
+puts JSON.parse(response.body)["short_url"]

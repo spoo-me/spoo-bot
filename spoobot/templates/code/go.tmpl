@@ -1,0 +1,39 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"strconv"
+)
+
+func main() {
+	payload := map[string]any{"long_url": "$url"}
+	// Optional extras — delete what you don't need:
+	if alias := "$alias"; alias != "" {
+		payload["alias"] = alias
+	}
+	if password := "$password"; password != "" {
+		payload["password"] = password
+	}
+	if mc := "$max_clicks"; mc != "" {
+		n, _ := strconv.Atoi(mc)
+		payload["max_clicks"] = n
+	}
+
+	body, _ := json.Marshal(payload)
+	req, _ := http.NewRequest("POST", "https://spoo.me/api/v1/shorten", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	// req.Header.Set("Authorization", "Bearer <YOUR_API_KEY>") // higher limits
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var result map[string]any
+	json.NewDecoder(resp.Body).Decode(&result)
+	fmt.Println(result["short_url"])
+}
