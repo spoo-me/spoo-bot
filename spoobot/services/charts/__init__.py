@@ -20,11 +20,13 @@ class ChartRenderer(Protocol):
 def build_renderer(kind: str, http: httpx.AsyncClient, cfg: Config) -> ChartRenderer:
     """`http` is an httpx.AsyncClient without base_url (the bot's misc client).
 
-    Renderer modules are imported lazily (importlib) — they land in Tasks 16/17.
+    Renderer modules import inside their branch so the optional htmlcards
+    renderer never loads unless selected.
     """
     if kind == "quickchart":
-        module = import_module("spoobot.services.charts.quickchart")
-        return module.QuickChartRenderer(http, cfg)
+        from spoobot.services.charts.quickchart import QuickChartRenderer
+
+        return QuickChartRenderer(http, cfg)
     if kind == "htmlcards":
         module = import_module("spoobot.services.charts.htmlcards")
         return module.HtmlCardRenderer(cfg)
