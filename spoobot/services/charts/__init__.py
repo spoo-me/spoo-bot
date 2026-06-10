@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from importlib import import_module
 from typing import TYPE_CHECKING, Protocol
 
 import httpx
@@ -28,6 +27,7 @@ def build_renderer(kind: str, http: httpx.AsyncClient, cfg: Config) -> ChartRend
 
         return QuickChartRenderer(http, cfg)
     if kind == "htmlcards":
-        module = import_module("spoobot.services.charts.htmlcards")
-        return module.HtmlCardRenderer(cfg)
+        from spoobot.services.charts.htmlcards import HtmlCardRenderer
+
+        return HtmlCardRenderer(cfg)
     raise ValueError(f"unknown chart renderer: {kind}")
