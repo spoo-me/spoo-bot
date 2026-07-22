@@ -14,18 +14,23 @@ from spoobot.errors import (
 
 USER_AGENT = "spoo-bot/2.0 (+https://github.com/spoo-me/spoo-bot)"
 
+# Sent only on clients that talk to spoo.me services — never to third-party
+# hosts (Discord, chart renderers). Lets the API attribute traffic by client.
+SPOO_CLIENT_HEADERS = {"X-Spoo-Client": "bot/2.0"}
+
 
 def create_client(
     *,
     base_url: str = "",
     transport: httpx.AsyncBaseTransport | None = None,
+    extra_headers: dict[str, str] | None = None,
 ) -> httpx.AsyncClient:
     """One factory for every outbound client — UA, timeouts, HTTP/2 in one place."""
     return httpx.AsyncClient(
         base_url=base_url,
         transport=transport,
         timeout=httpx.Timeout(30.0, connect=10.0),
-        headers={"User-Agent": USER_AGENT},
+        headers={"User-Agent": USER_AGENT, **(extra_headers or {})},
         follow_redirects=False,
     )
 
