@@ -10,7 +10,11 @@ from spoobot.errors import (
     RateLimitedError,
     ServerError,
 )
-from spoobot.infrastructure.http import create_client, raise_for_status_mapped
+from spoobot.infrastructure.http import (
+    SPOO_CLIENT_HEADERS,
+    create_client,
+    raise_for_status_mapped,
+)
 
 
 def _client(
@@ -66,3 +70,24 @@ async def test_user_agent_header():
     ) as client:
         await client.get("/")
     assert captured["ua"].startswith("spoo-bot/2.0")
+
+
+async def test_spoo_client_header_opt_in():
+    captured = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured["spoo"] = request.headers.get("X-Spoo-Client")
+        return httpx.Response(200, json={})
+
+    transport = httpx.MockTransport(handler)
+    async with create_client(
+        base_url="https://t.test",
+        transport=transport,
+        extra_headers=SPOO_CLIENT_HEADERS,
+    ) as client:
+        await client.get("/")
+    assert captured["spoo"] == "bot/2.0"
+
+    async with create_client(base_url="https://t.test", transport=transport) as client:
+        await client.get("/")
+    assert captured["spoo"] is None

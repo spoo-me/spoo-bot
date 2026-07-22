@@ -14,7 +14,7 @@ from spoobot.errors import (
     SpooApiError,
 )
 from spoobot.infrastructure.crypto import TokenCipher
-from spoobot.infrastructure.http import create_client
+from spoobot.infrastructure.http import SPOO_CLIENT_HEADERS, create_client
 from spoobot.infrastructure.logging import get_logger
 from spoobot.services.auth import AuthService
 from spoobot.services.charts import ChartRenderer, build_renderer
@@ -100,8 +100,12 @@ class SpooBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         cfg = self.config
-        self._http_spoo = create_client(base_url=cfg.spoo.api_base)
-        self._http_qr = create_client(base_url=cfg.spoo.qr_api_base)
+        self._http_spoo = create_client(
+            base_url=cfg.spoo.api_base, extra_headers=SPOO_CLIENT_HEADERS
+        )
+        self._http_qr = create_client(
+            base_url=cfg.spoo.qr_api_base, extra_headers=SPOO_CLIENT_HEADERS
+        )
         self._http_misc = create_client()
         self._spoo = SpooClient(self._http_spoo)
         self._qr = QrClient(self._http_qr)
