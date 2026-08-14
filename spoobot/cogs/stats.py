@@ -20,16 +20,10 @@ class StatsCog(commands.Cog):
     def __init__(self, bot: SpooBot) -> None:
         self.bot = bot
 
-    async def fetch(
-        self, short_code: str, password: str | None, group_by: list[str]
-    ) -> StatsResult:
-        return await self.bot.spoo.stats(
-            scope="anon",
-            short_code=short_code,
-            password=password,
-            group_by=group_by,
-            metrics=["clicks", "unique_clicks"],
-        )
+    async def fetch(self, short_code: str, password: str | None) -> StatsResult:
+        """Public per-link stats; every dimension arrives in one response."""
+        envelope = await self.bot.spoo.public_stats(short_code, password=password)
+        return envelope.stats
 
     @app_commands.command(name="stats", description="View short URL statistics 📊")
     @app_commands.describe(
@@ -44,7 +38,7 @@ class StatsCog(commands.Cog):
         password: str | None = None,
     ) -> None:
         await interaction.response.defer()
-        result = await self.fetch(short_code, password, ["time"])
+        result = await self.fetch(short_code, password)
 
         clicks_by_time = result.series("clicks", "time")
         files: list[discord.File] = []
@@ -105,7 +99,7 @@ class DimensionRow(discord.ui.ActionRow["StatsOverviewView"]):
     ) -> None:
         await interaction.response.defer()
         dim = select.values[0]
-        result = await self.cog.fetch(self.short_code, self.password, [dim])
+        result = await self.cog.fetch(self.short_code, self.password)
         rows = result.series("clicks", dim)
         if dim == "country":
             png = await self.cog.bot.charts.country_heatmap(dict(rows))
