@@ -52,7 +52,8 @@ class StatsSummary(_Model):
 
 
 class StatsResult(_Model):
-    scope: str
+    # the wire keeps a "scope" key for now; don't hard-require it
+    scope: str = "anon"
     group_by: list[str] = []
     timezone: str = "UTC"
     summary: StatsSummary
@@ -93,6 +94,19 @@ class DeviceTokenGrant(_Model):
     user: SpooProfile | None = None
 
 
-class ExportFile(_Model):
-    filename: str
-    content: bytes
+class PublicLink(_Model):
+    """Link facts from the public stats envelope."""
+
+    alias: str
+    short_url: str
+    long_url: str | None = None  # withheld unless the link is active
+    status: str = "active"
+    password_protected: bool = False
+
+
+class PublicStats(_Model):
+    """GET|POST /api/v1/public/stats/{short_code} envelope."""
+
+    generation: str  # "v1" | "v2" — which URL generation served the analytics
+    link: PublicLink
+    stats: StatsResult

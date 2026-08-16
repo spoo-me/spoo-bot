@@ -123,31 +123,73 @@ async def test_list_urls_requires_token(client):
         await client.list_urls(None)  # type: ignore[arg-type]
 
 
-async def test_stats_series_helper(client, api):
-    api.on(
-        "GET",
-        "/api/v1/stats",
-        body={
-            "scope": "anon",
-            "group_by": ["browser"],
-            "timezone": "UTC",
-            "summary": {
-                "total_clicks": 5,
-                "unique_clicks": 3,
-                "avg_redirection_time": 1.0,
-            },
-            "metrics": {
-                "clicks_by_browser": [
-                    {"browser": "Chrome", "clicks": 5, "clicks_percentage": 100.0}
-                ]
-            },
-            "short_code": "abc",
+PUBLIC_STATS_BODY = {
+    "generation": "v2",
+    "link": {
+        "alias": "abc",
+        "short_url": f"{BASE}/abc",
+        "long_url": "https://example.com",
+        "created_at": "2025-01-01T00:00:00Z",
+        "status": "active",
+        "max_clicks": None,
+        "block_bots": False,
+        "password_protected": False,
+    },
+    "stats": {
+        "scope": "anon",
+        "group_by": ["time", "browser"],
+        "timezone": "UTC",
+        "summary": {
+            "total_clicks": 5,
+            "unique_clicks": 3,
+            "avg_redirection_time": 1.0,
         },
+        "metrics": {
+            "clicks_by_browser": [
+                {"browser": "Chrome", "clicks": 5, "clicks_percentage": 100.0}
+            ]
+        },
+    },
+}
+
+
+async def test_public_stats_uses_get_without_password(client, api):
+    api.on("GET", "/api/v1/public/stats/abc", body=PUBLIC_STATS_BODY)
+    res = await client.public_stats("abc")
+    assert res.generation == "v2"
+    assert res.link.alias == "abc"
+    assert res.stats.series("clicks", "browser") == [("Chrome", 5)]
+    req = api.requests[0]
+    assert not req.content  # no body on GET
+    assert "Authorization" not in req.headers
+
+
+async def test_public_stats_password_travels_in_post_body_only(client, api):
+    api.on("POST", "/api/v1/public/stats/abc", body=PUBLIC_STATS_BODY)
+    await client.public_stats("abc", password="hunter2")
+    req = api.requests[0]
+    assert req.method == "POST"
+    assert json.loads(req.content) == {"password": "hunter2"}
+    assert "hunter2" not in str(req.url)  # never in the query string
+
+
+async def test_public_stats_passes_range_params(client, api):
+    api.on("GET", "/api/v1/public/stats/abc", body=PUBLIC_STATS_BODY)
+    await client.public_stats(
+        "abc",
+        start_date="2025-01-01T00:00:00Z",
+        end_date="2025-01-31T23:59:59Z",
+        timezone="America/New_York",
+        token="tok-1",
     )
-    res = await client.stats(
-        scope="anon", short_code="abc", group_by=["browser"], metrics=["clicks"]
-    )
-    assert res.series("clicks", "browser") == [("Chrome", 5)]
+    req = api.requests[0]
+    q = dict(req.url.params)
+    assert q == {
+        "start_date": "2025-01-01T00:00:00Z",
+        "end_date": "2025-01-31T23:59:59Z",
+        "timezone": "America/New_York",
+    }
+    assert req.headers["Authorization"] == "Bearer tok-1"
 
 
 async def test_emojify_uses_legacy_route(client, api):

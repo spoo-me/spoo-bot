@@ -17,11 +17,10 @@ from spoobot.infrastructure.http import raise_for_status_mapped
 from spoobot.services.models import (
     AliasCheck,
     DeviceTokenGrant,
-    ExportFile,
+    PublicStats,
     ShortUrl,
     SiteMetrics,
     SpooProfile,
-    StatsResult,
     TokenPair,
     UrlListItem,
     UrlPage,
@@ -168,53 +167,40 @@ class SpooClient:
         self._require(token)
         await self._json("DELETE", f"/api/v1/urls/{url_id}", token=token)
 
-    # ── stats & export ───────────────────────────────────────────────────
+    # ── stats ────────────────────────────────────────────────────────────
 
-    async def stats(
+    async def public_stats(
         self,
+        short_code: str,
         *,
-        scope: str,
-        short_code: str | None = None,
-        group_by: list[str] | None = None,
-        metrics: list[str] | None = None,
-        timezone: str = "UTC",
         password: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        timezone: str = "UTC",
         token: str | None = None,
-    ) -> StatsResult:
-        params: dict[str, Any] = {"scope": scope}
-        if short_code:
-            params["short_code"] = short_code
-        if group_by:
-            params["group_by"] = ",".join(group_by)
-        if metrics:
-            params["metrics"] = ",".join(metrics)
+    ) -> PublicStats:
+        """Per-link public statistics, no auth required.
+
+        The endpoint returns every dimension in one response (no group_by
+        param). A password only travels in a POST body — the server ignores
+        query-string passwords — so a password flips the method to POST.
+        An owner token bypasses the privacy and password gates.
+        """
+        params: dict[str, Any] = {}
+        if start_date:
+            params["start_date"] = start_date
+        if end_date:
+            params["end_date"] = end_date
         if timezone != "UTC":
             params["timezone"] = timezone
+        path = f"/api/v1/public/stats/{short_code}"
         if password:
-            params["password"] = password
-        data = await self._json("GET", "/api/v1/stats", token=token, params=params)
-        return StatsResult.model_validate(data)
-
-    async def export(
-        self,
-        *,
-        scope: str,
-        fmt: str,
-        short_code: str | None = None,
-        token: str | None = None,
-    ) -> ExportFile:
-        params: dict[str, Any] = {"scope": scope, "format": fmt}
-        if short_code:
-            params["short_code"] = short_code
-        resp = await self._http.get(
-            "/api/v1/export", params=params, headers=self._headers(token)
-        )
-        raise_for_status_mapped(resp)
-        dispo = resp.headers.get("Content-Disposition", "")
-        filename = "export"
-        if "filename=" in dispo:
-            filename = dispo.split("filename=")[-1].strip('" ')
-        return ExportFile(filename=filename, content=resp.content)
+            data = await self._json(
+                "POST", path, token=token, params=params, json={"password": password}
+            )
+        else:
+            data = await self._json("GET", path, token=token, params=params)
+        return PublicStats.model_validate(data)
 
     # ── account / auth ───────────────────────────────────────────────────
 
